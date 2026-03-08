@@ -38,3 +38,25 @@ VITE_GOOGLE_CLIENT_ID=your-real-client-id
 Restart `npm run dev`.  
 When you are not signed in, you will see a **“Sign in with Google”** button; after signing in, the app shows a personalized, authorized page with your Google profile information and a **Sign out** button.
 
+## Inventory items (`/item/:id`)
+
+Item pages at `/item/<id>` are **available only to logged-in users**. Each page fetches and displays the document with the given `id` from the Firestore **inventory** collection in the **alice-larp** Google Cloud project.
+
+### Firebase setup
+
+1. In the [Firebase Console](https://console.firebase.google.com/), select or create a project (e.g. **alice-larp**).
+2. Add a web app and copy the config object.
+3. Create Firestore database and add an **inventory** collection with your documents.
+4. Add these variables to `.env.local`:
+
+```
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=alice-larp.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=alice-larp
+VITE_FIREBASE_STORAGE_BUCKET=alice-larp.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+```
+
+5. Configure Firestore [security rules](https://firebase.google.com/docs/firestore/security/get-started) so only authenticated users can read the inventory collection.
+6. Restart `npm run dev` and navigate to `/item/<document-id>` while logged in.

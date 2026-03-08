@@ -1,4 +1,8 @@
+import { GoogleAuthProvider, signInWithCredential, signOut, signInWithPopup } from 'firebase/auth'
 import { useEffect, useMemo, useState } from 'react'
+import { Link, Route, Routes } from 'react-router-dom'
+import { auth } from './firebase.ts'
+import { ItemPage } from './pages/ItemPage.tsx'
 import './style.css'
 
 interface GoogleUser {
@@ -60,7 +64,6 @@ function LoginView({ onSignedIn }: LoginViewProps) {
 
   useEffect(() => {
     if (!clientId) {
-      // eslint-disable-next-line no-console
       console.error('Missing VITE_GOOGLE_CLIENT_ID environment variable for Google Sign-In.')
       return
     }
@@ -71,11 +74,19 @@ function LoginView({ onSignedIn }: LoginViewProps) {
 
     window.google.accounts.id.initialize({
       client_id: clientId,
-      callback: (response: unknown) => {
-        const credential = (response as { credential?: string }).credential
-        const user = parseGoogleUserFromCredential(credential)
+      callback: async (response: unknown) => {
+        const idToken = (response as { credential?: string }).credential
+        const user = parseGoogleUserFromCredential(idToken)
 
-        if (user) {
+        if (user && idToken) {
+          try {
+            if (auth) {
+              const credential = GoogleAuthProvider.credential(idToken)
+              await signInWithCredential(auth, credential)
+            }
+          } catch (error) {
+            console.error('failed to sign in', error)
+          }
           localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
           onSignedIn(user)
         }
@@ -121,13 +132,20 @@ export function App() {
 
   const isAuthorized = useMemo(() => Boolean(user?.email), [user])
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     if (user?.email && window.google?.accounts?.id) {
       window.google.accounts.id.revoke(user.email, () => {
         // no-op
       })
     }
 
+    try {
+      if (auth) {
+        await signOut(auth)
+      }
+    } catch {
+      // ignore if Firebase Auth not used
+    }
     localStorage.removeItem(STORAGE_KEY)
     setUser(null)
   }
@@ -136,37 +154,79 @@ export function App() {
     return <LoginView onSignedIn={setUser} />
   }
 
-  return (
-    <div className="app app--authorized">
-      <header className="app-header">
-        <div className="user-info">
-          {user.picture ? (
-            <img src={user.picture} alt={user.name} className="user-avatar" />
-          ) : (
-            <div className="user-avatar user-avatar--fallback">
-              {user.name
-                .split(' ')
-                .map((part) => part.charAt(0))
-                .join('')
-                .toUpperCase()}
-            </div>
-          )}
-          <div className="user-text">
-            <span className="user-name">{user.name}</span>
-            <span className="user-email">{user.email}</span>
-          </div>
-        </div>
-        <button type="button" className="logout-button" onClick={handleSignOut}>
-          Sign out
-        </button>
-      </header>
+  const currentUser = user!
 
-      <main className="app-main">
-        <h1>Hello, {user.name.split(' ')[0]}!</h1>
-        <p>You are authorized with your Google account.</p>
-        <p>Replace this section with your application&apos;s protected content.</p>
-      </main>
-    </div>
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <div className="app app--authorized">
+            <header className="app-header">
+              <div className="user-info">
+                {currentUser.picture ? (
+                  <img src={currentUser.picture} alt={currentUser.name} className="user-avatar" />
+                ) : (
+                  <div className="user-avatar user-avatar--fallback">
+                    {currentUser.name
+                      .split(' ')
+                      .map((part) => part.charAt(0))
+                      .join('')
+                      .toUpperCase()}
+                  </div>
+                )}
+                <div className="user-text">
+                  <span className="user-name">{currentUser.name}</span>
+                  <span className="user-email">{currentUser.email}</span>
+                </div>
+              </div>
+              <button type="button" className="logout-button" onClick={handleSignOut}>
+                Sign out
+              </button>
+            </header>
+
+            <main className="app-main">
+              <h1>Hello, {currentUser.name.split(' ')[0]}!</h1>
+              <p>You are authorized with your Google account.</p>
+              <p>
+                Visit <code>/item/&lt;id&gt;</code> to view inventory items, e.g.{' '}
+                <Link to="/item/sample">/item/sample</Link>.
+              </p>
+            </main>
+          </div>
+        }
+      />
+      <Route
+        path="/item/:id"
+        element={
+          <div className="app app--authorized app--with-header">
+            <header className="app-header">
+              <div className="user-info">
+                {currentUser.picture ? (
+                  <img src={currentUser.picture} alt={currentUser.name} className="user-avatar" />
+                ) : (
+                  <div className="user-avatar user-avatar--fallback">
+                    {currentUser.name
+                      .split(' ')
+                      .map((part) => part.charAt(0))
+                      .join('')
+                      .toUpperCase()}
+                  </div>
+                )}
+                <div className="user-text">
+                  <span className="user-name">{currentUser.name}</span>
+                  <span className="user-email">{currentUser.email}</span>
+                </div>
+              </div>
+              <button type="button" className="logout-button" onClick={handleSignOut}>
+                Sign out
+              </button>
+            </header>
+            <ItemPage />
+          </div>
+        }
+      />
+    </Routes>
   )
 }
 
