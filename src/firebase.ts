@@ -3,12 +3,12 @@ import { type Auth, getAuth } from 'firebase/auth'
 import { type Firestore, getFirestore } from 'firebase/firestore'
 
 const firebaseConfig: FirebaseOptions = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? 'alice-larp',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyD8IzGey1unClZ_GXKhfyBR84-UnL_Ezlc',
+  authDomain: 'alice-larp.firebaseapp.com',
+  projectId: 'alice-larp',
+  storageBucket: 'alice-larp.firebasestorage.app',
+  messagingSenderId: '815779847222',
+  appId: '1:815779847222:web:cd6fb2946ad97c642f0c97',
 }
 
 let app: FirebaseApp | null = null

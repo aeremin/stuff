@@ -59,15 +59,10 @@ interface LoginViewProps {
 }
 
 function LoginView({ onSignedIn }: LoginViewProps) {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+  const clientId = '815779847222-rb9k36al0cdqdqichtavbpmcl5fs4v7e.apps.googleusercontent.com'
   const [buttonElement, setButtonElement] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (!clientId) {
-      console.error('Missing VITE_GOOGLE_CLIENT_ID environment variable for Google Sign-In.')
-      return
-    }
-
     if (!buttonElement || !window.google?.accounts?.id) {
       return
     }
@@ -106,13 +101,7 @@ function LoginView({ onSignedIn }: LoginViewProps) {
     <div className="app app--unauthorized">
       <h1>Hello, World!</h1>
       <p>Sign in with Google to continue.</p>
-      {!clientId ? (
-        <p className="app__warning">
-          Set <code>VITE_GOOGLE_CLIENT_ID</code> in your environment to enable Google Sign-In.
-        </p>
-      ) : (
-        <div ref={setButtonElement} className="google-button-container" />
-      )}
+      <div ref={setButtonElement} className="google-button-container" />
     </div>
   )
 }
