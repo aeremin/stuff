@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithCredential, signOut, signInWithPopup } from 'firebase/auth'
+import { GoogleAuthProvider, signInWithCredential, signOut } from 'firebase/auth'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import { auth } from './firebase.ts'
