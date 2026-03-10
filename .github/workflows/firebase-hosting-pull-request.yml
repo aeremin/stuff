@@ -17,5 +17,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ALICE_LARP }}
-          projectId: alice-larp
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUFF_11062 }}
+          projectId: stuff-11062

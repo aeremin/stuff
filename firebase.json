@@ -1,6 +1,6 @@
 {
   "firestore": {
-    "database": "inventory",
+    "database": "(default)",
     "location": "europe-west6",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -20,6 +20,11 @@
     ]
   },
   "auth": {
-    "providers": {}
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Stuff",
+        "supportEmail": "a.eremin.msu@gmail.com"
+      }
+    }
   }
 }
