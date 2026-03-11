@@ -59,7 +59,7 @@ interface LoginViewProps {
 }
 
 function LoginView({ onSignedIn }: LoginViewProps) {
-  const clientId = '815779847222-rb9k36al0cdqdqichtavbpmcl5fs4v7e.apps.googleusercontent.com'
+  const clientId = '281115569091-qnmc2t7vfrl83lmg9ou2i94bf501ku5t.apps.googleusercontent.com'
   const [buttonElement, setButtonElement] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
