@@ -1,6 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { availableFields } from "../schema";
 import { db } from "../firebase";
 import "./ItemPage.css";
 
@@ -127,7 +128,33 @@ export function ItemPage() {
     );
   }
 
-  const { id: _docId, ...fields } = item;
+  const knownFieldIds = new Set(availableFields.map((f) => f.id));
+  const extraKeys = Object.keys(item).filter(
+    (k) => k !== "id" && !knownFieldIds.has(k),
+  );
+
+  function renderFieldValue(
+    value: unknown,
+    type: "number" | "string" | "url",
+  ): React.ReactNode {
+    if (value === null || value === undefined) return "";
+    if (type === "url" && typeof value === "string" && value.trim() !== "") {
+      return (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="item-page__field-link"
+        >
+          {value}
+        </a>
+      );
+    }
+    if (value !== null && typeof value === "object") {
+      return JSON.stringify(value);
+    }
+    return String(value);
+  }
 
   return (
     <div className="item-page">
@@ -154,16 +181,31 @@ export function ItemPage() {
           )}
         </div>
         <dl className="item-page__fields">
-          {Object.entries(fields).map(([key, value]) => (
-            <div key={key} className="item-page__field">
-              <dt className="item-page__field-key">{key}</dt>
-              <dd className="item-page__field-value">
-                {value !== null && typeof value === "object"
-                  ? JSON.stringify(value)
-                  : String(value ?? "")}
-              </dd>
-            </div>
-          ))}
+          {availableFields.map((field) => {
+            if (!(field.id in item)) return null;
+            const value = item[field.id];
+            return (
+              <div key={field.id} className="item-page__field">
+                <dt className="item-page__field-key">{field.humanReadableName}</dt>
+                <dd className="item-page__field-value">
+                  {renderFieldValue(value, field.type)}
+                </dd>
+              </div>
+            );
+          })}
+          {extraKeys.map((key) => {
+            const value = item[key];
+            return (
+              <div key={key} className="item-page__field">
+                <dt className="item-page__field-key">{key}</dt>
+                <dd className="item-page__field-value">
+                  {value !== null && typeof value === "object"
+                    ? JSON.stringify(value)
+                    : String(value ?? "")}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
       </div>
     </div>

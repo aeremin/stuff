@@ -122,6 +122,15 @@
   word-break: break-word;
 }
 
+.item-page__field-link {
+  color: #93c5fd;
+  text-decoration: none;
+}
+
+.item-page__field-link:hover {
+  text-decoration: underline;
+}
+
 .item-page__loading,
 .item-page__error,
 .item-page__not-found {
@@ -166,5 +175,9 @@
 
   .item-page__field-value {
     color: #1e293b;
+  }
+
+  .item-page__field-link {
+    color: #2563eb;
   }
 }
