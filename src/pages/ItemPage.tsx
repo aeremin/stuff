@@ -1,78 +1,78 @@
-import { doc, getDoc } from 'firebase/firestore'
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { db } from '../firebase'
-import './ItemPage.css'
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { db } from "../firebase";
+import "./ItemPage.css";
 
-const INVENTORY_COLLECTION = 'items'
+const INVENTORY_COLLECTION = "items";
 
 interface InventoryItem {
-  id: string
-  [key: string]: unknown
+  id: string;
+  [key: string]: unknown;
 }
 
 export function ItemPage() {
-  const { id } = useParams<{ id: string }>()
-  const [item, setItem] = useState<InventoryItem | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { id } = useParams<{ id: string }>();
+  const [item, setItem] = useState<InventoryItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
     if (!db) {
-      setError('Firebase is not configured. Add VITE_FIREBASE_* env vars.')
-      setLoading(false)
-      return
+      setError("Firebase is not configured. Add VITE_FIREBASE_* env vars.");
+      setLoading(false);
+      return;
     }
 
-    let cancelled = false
+    let cancelled = false;
 
     async function fetchItem() {
-      const docId = id
-      if (!docId) return
+      const docId = id;
+      if (!docId) return;
       try {
-        const docRef = doc(db!, INVENTORY_COLLECTION, docId)
-        const docSnap = await getDoc(docRef)
+        const docRef = doc(db!, INVENTORY_COLLECTION, docId);
+        const docSnap = await getDoc(docRef);
 
         if (cancelled) {
-          return
+          return;
         }
 
         if (docSnap.exists()) {
           setItem({
             id: docSnap.id,
             ...docSnap.data(),
-          })
+          });
         } else {
-          setItem(null)
+          setItem(null);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load item')
+          setError(err instanceof Error ? err.message : "Failed to load item");
         }
       } finally {
         if (!cancelled) {
-          setLoading(false)
+          setLoading(false);
         }
       }
     }
 
-    fetchItem()
+    fetchItem();
     return () => {
-      cancelled = true
-    }
-  }, [id])
+      cancelled = true;
+    };
+  }, [id]);
 
   if (loading) {
     return (
       <div className="item-page">
         <div className="item-page__loading">Loading…</div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -83,7 +83,7 @@ export function ItemPage() {
           ← Back to home
         </Link>
       </div>
-    )
+    );
   }
 
   if (!item) {
@@ -94,10 +94,10 @@ export function ItemPage() {
           ← Back to home
         </Link>
       </div>
-    )
+    );
   }
 
-  const { id: _docId, ...fields } = item
+  const { id: _docId, ...fields } = item;
 
   return (
     <div className="item-page">
@@ -113,14 +113,14 @@ export function ItemPage() {
             <div key={key} className="item-page__field">
               <dt className="item-page__field-key">{key}</dt>
               <dd className="item-page__field-value">
-                {value !== null && typeof value === 'object'
+                {value !== null && typeof value === "object"
                   ? JSON.stringify(value)
-                  : String(value ?? '')}
+                  : String(value ?? "")}
               </dd>
             </div>
           ))}
         </dl>
       </div>
     </div>
-  )
+  );
 }

@@ -1,6 +1,10 @@
-import { type FirebaseApp, type FirebaseOptions, initializeApp } from 'firebase/app'
-import { type Auth, getAuth } from 'firebase/auth'
-import { type Firestore, getFirestore } from 'firebase/firestore'
+import {
+  type FirebaseApp,
+  type FirebaseOptions,
+  initializeApp,
+} from "firebase/app";
+import { type Auth, getAuth } from "firebase/auth";
+import { type Firestore, getFirestore } from "firebase/firestore";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: "AIzaSyDMhMou7EPvdXE0YZlJeHv1nn6-M1uExkg",
@@ -11,19 +15,19 @@ const firebaseConfig: FirebaseOptions = {
   appId: "1:281115569091:web:0b7e78724dcb6a6b312b76",
 };
 
-let app: FirebaseApp | null = null
-let auth: Auth | null = null
-let db: Firestore | null = null
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 
 if (firebaseConfig.apiKey && firebaseConfig.projectId) {
   try {
-    app = initializeApp(firebaseConfig)
-    auth = getAuth(app)
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
     db = getFirestore(app) as Firestore;
   } catch (error) {
     // Firebase not configured
-    console.error('Firebase not configured', error)
+    console.error("Firebase not configured", error);
   }
 }
 
-export { auth, db }
+export { auth, db };
