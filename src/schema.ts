@@ -11,7 +11,7 @@ export interface FieldValue {
 
 export type Field = FieldDescriptor | FieldValue;
 
-const availableFields: FieldDescriptor[] = [
+export const availableFields: FieldDescriptor[] = [
   {
     id: "name",
     humanReadableName: "Name",

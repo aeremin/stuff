@@ -6,6 +6,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { auth } from "./firebase.ts";
+import { AddItemPage } from "./pages/AddItemPage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
 import "./style.css";
 
@@ -198,7 +199,48 @@ export function App() {
                 Visit <code>/item/&lt;id&gt;</code> to view inventory items,
                 e.g. <Link to="/item/sample">/item/sample</Link>.
               </p>
+              <p>
+                <Link to="/add">Add new item</Link>
+              </p>
             </main>
+          </div>
+        }
+      />
+      <Route
+        path="/add"
+        element={
+          <div className="app app--authorized app--with-header">
+            <header className="app-header">
+              <div className="user-info">
+                {currentUser.picture ? (
+                  <img
+                    src={currentUser.picture}
+                    alt={currentUser.name}
+                    className="user-avatar"
+                  />
+                ) : (
+                  <div className="user-avatar user-avatar--fallback">
+                    {currentUser.name
+                      .split(" ")
+                      .map((part) => part.charAt(0))
+                      .join("")
+                      .toUpperCase()}
+                  </div>
+                )}
+                <div className="user-text">
+                  <span className="user-name">{currentUser.name}</span>
+                  <span className="user-email">{currentUser.email}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="logout-button"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </header>
+            <AddItemPage />
           </div>
         }
       />
