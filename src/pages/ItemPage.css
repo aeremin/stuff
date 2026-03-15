@@ -35,10 +35,15 @@
 
 .item-page__actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
+}
+
+.item-page__edit-button {
+  text-decoration: none;
 }
 
 .item-page__nfc-button {

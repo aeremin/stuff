@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import { auth } from "./firebase.ts";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
+import { EditItemPage } from "./pages/EditItemPage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
 import "./style.css";
 
@@ -279,6 +280,44 @@ export function App() {
               </button>
             </header>
             <ItemPage />
+          </div>
+        }
+      />
+      <Route
+        path="/item/:id/edit"
+        element={
+          <div className="app app--authorized app--with-header">
+            <header className="app-header">
+              <div className="user-info">
+                {currentUser.picture ? (
+                  <img
+                    src={currentUser.picture}
+                    alt={currentUser.name}
+                    className="user-avatar"
+                  />
+                ) : (
+                  <div className="user-avatar user-avatar--fallback">
+                    {currentUser.name
+                      .split(" ")
+                      .map((part) => part.charAt(0))
+                      .join("")
+                      .toUpperCase()}
+                  </div>
+                )}
+                <div className="user-text">
+                  <span className="user-name">{currentUser.name}</span>
+                  <span className="user-email">{currentUser.email}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="logout-button"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </button>
+            </header>
+            <EditItemPage />
           </div>
         }
       />

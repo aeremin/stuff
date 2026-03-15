@@ -166,6 +166,12 @@ export function ItemPage() {
       <div className="item-page__card">
         <h1 className="item-page__title">Item: {id}</h1>
         <div className="item-page__actions">
+          <Link
+            to={`/item/${id}/edit`}
+            className="item-page__nfc-button item-page__edit-button"
+          >
+            Edit
+          </Link>
           {nfcSupported && (
             <div>
               <button
