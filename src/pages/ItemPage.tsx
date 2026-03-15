@@ -164,7 +164,7 @@ export function ItemPage() {
         </Link>
       </div>
       <div className="item-page__card">
-        <h1 className="item-page__title">Item: {id}</h1>
+        <h1 className="item-page__title">{item["name"] as string}</h1>
         <div className="item-page__actions">
           <Link
             to={`/item/${id}/edit`}
@@ -179,7 +179,9 @@ export function ItemPage() {
                 className="item-page__nfc-button"
                 onClick={handleWriteNfc}
                 disabled={!nfcSupported || nfcWriting}
-              >{nfcWriting ? "Tap NFC tag…" : "Write this page to NFC tag"}</button>
+              >
+                {nfcWriting ? "Tap NFC tag…" : "Write this page to NFC tag"}
+              </button>
               {nfcStatus && (
                 <p className="item-page__nfc-status">{nfcStatus}</p>
               )}
@@ -192,7 +194,9 @@ export function ItemPage() {
             const value = item[field.id];
             return (
               <div key={field.id} className="item-page__field">
-                <dt className="item-page__field-key">{field.humanReadableName}</dt>
+                <dt className="item-page__field-key">
+                  {field.humanReadableName}
+                </dt>
                 <dd className="item-page__field-value">
                   {renderFieldValue(value, field.type)}
                 </dd>
