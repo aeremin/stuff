@@ -33,12 +33,6 @@ export function ItemPage() {
       return;
     }
 
-    if (!db) {
-      setError("Firebase is not configured. Add VITE_FIREBASE_* env vars.");
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     async function fetchItem() {

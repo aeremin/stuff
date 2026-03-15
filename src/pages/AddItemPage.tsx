@@ -13,19 +13,6 @@ const initialValues = Object.fromEntries(
 export function AddItemPage() {
   const navigate = useNavigate();
 
-  if (!db) {
-    return (
-      <div className="item-page">
-        <div className="item-page__error">
-          Firebase is not configured. Add VITE_FIREBASE_* env vars.
-        </div>
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <ItemForm
       initialValues={initialValues}

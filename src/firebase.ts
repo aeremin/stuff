@@ -17,7 +17,7 @@ const firebaseConfig: FirebaseOptions = {
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
-let db: Firestore | null = null;
+let db: Firestore;
 
 if (firebaseConfig.apiKey && firebaseConfig.projectId) {
   try {

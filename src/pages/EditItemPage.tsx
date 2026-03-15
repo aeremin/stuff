@@ -30,9 +30,8 @@ export function EditItemPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id || !db) {
+    if (!id) {
       setLoading(false);
-      if (!db) setError("Firebase is not configured. Add VITE_FIREBASE_* env vars.");
       return;
     }
 
@@ -58,7 +57,9 @@ export function EditItemPage() {
     }
 
     fetchItem();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading) {
@@ -103,7 +104,6 @@ export function EditItemPage() {
         </Link>
       }
       onSubmit={async (payload) => {
-        if (!db) return;
         const docRef = doc(db, INVENTORY_COLLECTION, id!);
         await updateDoc(docRef, payload);
         navigate(`/item/${id}`);
