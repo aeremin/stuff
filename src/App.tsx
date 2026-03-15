@@ -4,10 +4,11 @@ import {
   signOut,
 } from "firebase/auth";
 import { useEffect, useMemo, useState } from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { auth } from "./firebase.ts";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
 import { EditItemPage } from "./pages/EditItemPage.tsx";
+import { HomePage } from "./pages/HomePage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
 import "./style.css";
 
@@ -203,9 +204,7 @@ export function App() {
             <AppHeader user={currentUser} onSignOut={handleSignOut} />
 
             <main className="app-main">
-              <p>
-                <Link to="/add">Add new item</Link>
-              </p>
+              <HomePage />
             </main>
           </div>
         }
