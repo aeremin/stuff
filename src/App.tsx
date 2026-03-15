@@ -115,6 +115,46 @@ function LoginView({ onSignedIn }: LoginViewProps) {
   );
 }
 
+interface AppHeaderProps {
+  user: GoogleUser;
+  onSignOut: () => void;
+}
+
+function AppHeader({ user, onSignOut }: AppHeaderProps) {
+  return (
+    <header className="app-header">
+      <div className="user-info">
+        {user.picture ? (
+          <img
+            src={user.picture}
+            alt={user.name}
+            className="user-avatar"
+          />
+        ) : (
+          <div className="user-avatar user-avatar--fallback">
+            {user.name
+              .split(" ")
+              .map((part) => part.charAt(0))
+              .join("")
+              .toUpperCase()}
+          </div>
+        )}
+        <div className="user-text">
+          <span className="user-name">{user.name}</span>
+          <span className="user-email">{user.email}</span>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="logout-button"
+        onClick={onSignOut}
+      >
+        Sign out
+      </button>
+    </header>
+  );
+}
+
 export function App() {
   const [user, setUser] = useState<GoogleUser | null>(() => {
     try {
@@ -160,36 +200,7 @@ export function App() {
         path="/"
         element={
           <div className="app app--authorized">
-            <header className="app-header">
-              <div className="user-info">
-                {currentUser.picture ? (
-                  <img
-                    src={currentUser.picture}
-                    alt={currentUser.name}
-                    className="user-avatar"
-                  />
-                ) : (
-                  <div className="user-avatar user-avatar--fallback">
-                    {currentUser.name
-                      .split(" ")
-                      .map((part) => part.charAt(0))
-                      .join("")
-                      .toUpperCase()}
-                  </div>
-                )}
-                <div className="user-text">
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="user-email">{currentUser.email}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="logout-button"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </header>
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
 
             <main className="app-main">
               <p>
@@ -203,36 +214,7 @@ export function App() {
         path="/add"
         element={
           <div className="app app--authorized app--with-header">
-            <header className="app-header">
-              <div className="user-info">
-                {currentUser.picture ? (
-                  <img
-                    src={currentUser.picture}
-                    alt={currentUser.name}
-                    className="user-avatar"
-                  />
-                ) : (
-                  <div className="user-avatar user-avatar--fallback">
-                    {currentUser.name
-                      .split(" ")
-                      .map((part) => part.charAt(0))
-                      .join("")
-                      .toUpperCase()}
-                  </div>
-                )}
-                <div className="user-text">
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="user-email">{currentUser.email}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="logout-button"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </header>
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
             <AddItemPage />
           </div>
         }
@@ -241,36 +223,7 @@ export function App() {
         path="/item/:id"
         element={
           <div className="app app--authorized app--with-header">
-            <header className="app-header">
-              <div className="user-info">
-                {currentUser.picture ? (
-                  <img
-                    src={currentUser.picture}
-                    alt={currentUser.name}
-                    className="user-avatar"
-                  />
-                ) : (
-                  <div className="user-avatar user-avatar--fallback">
-                    {currentUser.name
-                      .split(" ")
-                      .map((part) => part.charAt(0))
-                      .join("")
-                      .toUpperCase()}
-                  </div>
-                )}
-                <div className="user-text">
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="user-email">{currentUser.email}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="logout-button"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </header>
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
             <ItemPage />
           </div>
         }
@@ -279,36 +232,7 @@ export function App() {
         path="/item/:id/edit"
         element={
           <div className="app app--authorized app--with-header">
-            <header className="app-header">
-              <div className="user-info">
-                {currentUser.picture ? (
-                  <img
-                    src={currentUser.picture}
-                    alt={currentUser.name}
-                    className="user-avatar"
-                  />
-                ) : (
-                  <div className="user-avatar user-avatar--fallback">
-                    {currentUser.name
-                      .split(" ")
-                      .map((part) => part.charAt(0))
-                      .join("")
-                      .toUpperCase()}
-                  </div>
-                )}
-                <div className="user-text">
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="user-email">{currentUser.email}</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="logout-button"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
-            </header>
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
             <EditItemPage />
           </div>
         }
