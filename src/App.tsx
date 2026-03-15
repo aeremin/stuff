@@ -110,8 +110,6 @@ function LoginView({ onSignedIn }: LoginViewProps) {
 
   return (
     <div className="app app--unauthorized">
-      <h1>Hello, World!</h1>
-      <p>Sign in with Google to continue.</p>
       <div ref={setButtonElement} className="google-button-container" />
     </div>
   );
@@ -194,12 +192,6 @@ export function App() {
             </header>
 
             <main className="app-main">
-              <h1>Hello, {currentUser.name.split(" ")[0]}!</h1>
-              <p>You are authorized with your Google account.</p>
-              <p>
-                Visit <code>/item/&lt;id&gt;</code> to view inventory items,
-                e.g. <Link to="/item/sample">/item/sample</Link>.
-              </p>
               <p>
                 <Link to="/add">Add new item</Link>
               </p>
