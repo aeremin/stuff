@@ -2,16 +2,10 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { availableFields } from "../schema";
-import { db } from "../firebase";
+import { db, INVENTORY_COLLECTION } from "../firebase";
 import { ItemForm } from "./ItemForm";
 import "./ItemPage.css";
-
-const INVENTORY_COLLECTION = "items";
-
-interface InventoryItem {
-  id: string;
-  [key: string]: unknown;
-}
+import type { InventoryItem } from "../common";
 
 function itemToInitialValues(item: InventoryItem): Record<string, string> {
   const entries = availableFields.map((f) => {
@@ -43,7 +37,7 @@ export function EditItemPage() {
         const docSnap = await getDoc(docRef);
         if (cancelled) return;
         if (docSnap.exists()) {
-          setItem({ id: docSnap.id, ...docSnap.data() });
+          setItem(docSnap.data() as InventoryItem);
         } else {
           setItem(null);
         }

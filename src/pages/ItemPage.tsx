@@ -2,15 +2,9 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { availableFields } from "../schema";
-import { db } from "../firebase";
+import { db, INVENTORY_COLLECTION } from "../firebase";
 import "./ItemPage.css";
-
-const INVENTORY_COLLECTION = "items";
-
-interface InventoryItem {
-  id: string;
-  [key: string]: unknown;
-}
+import type { InventoryItem } from "../common";
 
 export function ItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,10 +41,7 @@ export function ItemPage() {
         }
 
         if (docSnap.exists()) {
-          setItem({
-            id: docSnap.id,
-            ...docSnap.data(),
-          });
+          setItem(docSnap.data() as InventoryItem);
         } else {
           setItem(null);
         }

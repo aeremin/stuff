@@ -23,11 +23,14 @@ if (firebaseConfig.apiKey && firebaseConfig.projectId) {
   try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    db = getFirestore(app) as Firestore;
+    db = getFirestore(app);
   } catch (error) {
     // Firebase not configured
     console.error("Firebase not configured", error);
   }
 }
 
-export { auth, db };
+const INVENTORY_COLLECTION = "items";
+
+export { auth, db, INVENTORY_COLLECTION };
+
