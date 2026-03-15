@@ -40,7 +40,7 @@ export function EditItemPage() {
 
     async function fetchItem() {
       try {
-        const docRef = doc(db!, INVENTORY_COLLECTION, id);
+        const docRef = doc(db!, INVENTORY_COLLECTION, id!);
         const docSnap = await getDoc(docRef);
         if (cancelled) return;
         if (docSnap.exists()) {
