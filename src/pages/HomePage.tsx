@@ -72,7 +72,7 @@ export function HomePage() {
           return {
             id: docSnap.id,
             ...data,
-          };
+          } as InventoryItem;
         });
 
         setItems(results);
