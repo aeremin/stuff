@@ -1,27 +1,8 @@
-import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { MarkdownView } from "../components/MarkdownView";
-import { db, INVENTORY_COLLECTION } from "../firebase";
+import { searchItems } from "../algolia";
 import type { InventoryItem } from "../common";
-
-function buildNamePrefixBounds(term: string): [string, string] {
-  const trimmed = term.trim();
-  if (!trimmed) {
-    return ["", ""];
-  }
-  const lower = trimmed;
-  // Firestore prefix search pattern: [term, term + \uf8ff]
-  const upper = `${lower}\uf8ff`;
-  return [lower, upper];
-}
 
 export function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +21,6 @@ export function HomePage() {
       setHasSearched(false);
       return;
     }
-
     let cancelled = false;
     setHasSearched(true);
     setLoading(true);
@@ -48,33 +28,11 @@ export function HomePage() {
 
     const timeoutId = window.setTimeout(async () => {
       try {
-        const [lower, upper] = buildNamePrefixBounds(trimmed);
-        if (!db) {
-          throw new Error("Database is not configured.");
-        }
-
-        const colRef = collection(db, INVENTORY_COLLECTION);
-        const q = query(
-          colRef,
-          orderBy("name"),
-          where("name", ">=", lower),
-          where("name", "<=", upper),
-          limit(10),
-        );
-
-        const snapshot = await getDocs(q);
+        const results = await searchItems(trimmed);
 
         if (cancelled) {
           return;
         }
-
-        const results: InventoryItem[] = snapshot.docs.map((docSnap) => {
-          const data = docSnap.data() as Omit<InventoryItem, "id">;
-          return {
-            id: docSnap.id,
-            ...data,
-          } as InventoryItem;
-        });
 
         setItems(results);
       } catch (err) {
@@ -107,11 +65,11 @@ export function HomePage() {
 
       <div className="home__search">
         <label className="home__search-label">
-          <span className="home__search-label-text">Search by name</span>
+          <span className="home__search-label-text">Search items</span>
           <input
             type="text"
             className="home__search-input"
-            placeholder="Start typing item name…"
+            placeholder="Search by name or description…"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
@@ -119,7 +77,7 @@ export function HomePage() {
       </div>
 
       {!searchTerm.trim() && (
-        <p className="home__hint">Type a name to search your items.</p>
+        <p className="home__hint">Type to search your items.</p>
       )}
 
       {searchTerm.trim() && (
@@ -127,7 +85,7 @@ export function HomePage() {
           {loading && <p className="home__status">Searching…</p>}
           {error && <p className="home__status home__status--error">{error}</p>}
           {!loading && !error && hasSearched && items.length === 0 && (
-            <p className="home__status">No items match this name.</p>
+            <p className="home__status">No items match your search.</p>
           )}
           {!loading && !error && items.length > 0 && (
             <ul className="home__list">
@@ -158,4 +116,3 @@ export function HomePage() {
     </div>
   );
 }
-
