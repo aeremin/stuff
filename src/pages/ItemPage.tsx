@@ -2,7 +2,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MarkdownView } from "../components/MarkdownView";
-import { availableFields } from "../schema";
+import { availableFields, isFieldVisibleForItemKind } from "../schema";
 import type { FieldDescriptor } from "../schema";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import "./ItemPage.css";
@@ -119,6 +119,7 @@ export function ItemPage() {
   const extraKeys = Object.keys(item).filter(
     (k) => k !== "id" && !knownFieldIds.has(k),
   );
+  const itemKind = String(item["kind"] ?? "");
 
   function renderFieldValue(
     value: unknown,
@@ -205,6 +206,7 @@ export function ItemPage() {
         </div>
         <dl className="item-page__fields">
           {availableFields.map((field) => {
+            if (!isFieldVisibleForItemKind(field, itemKind)) return null;
             if (!(field.id in item)) return null;
             const value = item[field.id];
             return (

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { availableFields } from "../schema";
+import { availableFields, isFieldVisibleForItemKind } from "../schema";
 import type { FieldDescriptor } from "../schema";
 import { uploadItemImage } from "../storageUpload";
 import "./AddItemPage.css";
@@ -9,6 +9,35 @@ function getInputType(field: FieldDescriptor): "number" | "text" | "url" {
   if (field.type === "number") return "number";
   if (field.type === "url") return "url";
   return "text";
+}
+
+function SelectFieldInput(props: {
+  field: FieldDescriptor;
+  value: string;
+  saving: boolean;
+  onChange: (value: string) => void;
+}) {
+  const { field, value, saving, onChange } = props;
+  if (field.type !== "select") return null;
+  const options = field.allowedValues ?? [];
+  const valueNotListed = value !== "" && !options.includes(value);
+  return (
+    <select
+      id={`add-item-${field.id}`}
+      className="add-item-page__input"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={saving}
+    >
+      <option value="">—</option>
+      {valueNotListed ? <option value={value}>{value}</option> : null}
+      {options.map((opt) => (
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 export interface ItemFormProps {
@@ -41,8 +70,11 @@ export function ItemForm({
     setSaving(true);
     try {
       const payload: Record<string, number | string> = {};
+      const currentKind = values.kind ?? "";
       for (const field of availableFields) {
-        const raw = values[field.id] ?? "";
+        const raw = isFieldVisibleForItemKind(field, currentKind)
+          ? (values[field.id] ?? "")
+          : "";
         if (field.type === "number") {
           const num = Number(raw);
           payload[field.id] = Number.isNaN(num) ? 0 : num;
@@ -70,7 +102,11 @@ export function ItemForm({
         )}
         <form onSubmit={handleSubmit} className="add-item-page__form">
           <div className="item-page__fields">
-            {availableFields.map((field) => (
+            {availableFields
+              .filter((field) =>
+                isFieldVisibleForItemKind(field, values.kind ?? ""),
+              )
+              .map((field) => (
               <div
                 key={field.id}
                 className={
@@ -154,6 +190,13 @@ export function ItemForm({
                       <p className="add-item-page__image-status">Uploading…</p>
                     ) : null}
                   </div>
+                ) : field.type === "select" ? (
+                  <SelectFieldInput
+                    field={field}
+                    value={values[field.id] ?? ""}
+                    saving={saving}
+                    onChange={(v) => setField(field.id, v)}
+                  />
                 ) : (
                   <input
                     id={`add-item-${field.id}`}
