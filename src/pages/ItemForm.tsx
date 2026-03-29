@@ -116,7 +116,7 @@ export function ItemForm({
                       <input
                         id={`add-item-${field.id}`}
                         type="file"
-                        accept="image/*"
+                        accept="image/*;capture=camera"
                         className="add-item-page__file-input"
                         disabled={saving || imageUploadingId !== null}
                         onChange={async (e) => {
