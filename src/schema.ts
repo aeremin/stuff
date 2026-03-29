@@ -1,7 +1,7 @@
 export interface FieldDescriptor {
   id: string;
   humanReadableName: string;
-  type: "number" | "string" | "url";
+  type: "number" | "string" | "url" | "image";
 }
 
 export interface FieldValue {
@@ -46,5 +46,10 @@ export const availableFields: FieldDescriptor[] = [
     id: "weight_per_piece",
     humanReadableName: "Weight (p/p)",
     type: "number",
+  },
+  {
+    id: "photo",
+    humanReadableName: "Photo",
+    type: "image",
   },
 ];

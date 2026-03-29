@@ -136,6 +136,31 @@
   text-decoration: underline;
 }
 
+.item-page__field-image-link {
+  display: inline-block;
+  line-height: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.25);
+  transition:
+    box-shadow 0.12s ease,
+    transform 0.12s ease;
+}
+
+.item-page__field-image-link:hover {
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+  transform: translateY(-1px);
+}
+
+.item-page__field-image-thumb {
+  display: block;
+  max-width: 120px;
+  max-height: 120px;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+}
+
 .item-page__loading,
 .item-page__error,
 .item-page__not-found {
@@ -184,5 +209,13 @@
 
   .item-page__field-link {
     color: #2563eb;
+  }
+
+  .item-page__field-image-link {
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
+  }
+
+  .item-page__field-image-link:hover {
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.45);
   }
 }

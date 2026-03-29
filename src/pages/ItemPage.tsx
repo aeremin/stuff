@@ -2,6 +2,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { availableFields } from "../schema";
+import type { FieldDescriptor } from "../schema";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import "./ItemPage.css";
 import type { InventoryItem } from "../common";
@@ -120,9 +121,27 @@ export function ItemPage() {
 
   function renderFieldValue(
     value: unknown,
-    type: "number" | "string" | "url",
+    type: FieldDescriptor["type"],
   ): React.ReactNode {
     if (value === null || value === undefined) return "";
+    if (type === "image" && typeof value === "string" && value.trim() !== "") {
+      return (
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="item-page__field-image-link"
+        >
+          <img
+            src={value}
+            alt=""
+            className="item-page__field-image-thumb"
+            loading="lazy"
+          />
+        </a>
+      );
+    }
+    if (type === "image") return "";
     if (type === "url" && typeof value === "string" && value.trim() !== "") {
       return (
         <a

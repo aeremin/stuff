@@ -1,7 +1,9 @@
 import { useCallback, useState } from "react";
 import { availableFields } from "../schema";
 import type { FieldDescriptor } from "../schema";
+import { uploadItemImage } from "../storageUpload";
 import "./AddItemPage.css";
+import "./ItemPage.css";
 
 function getInputType(field: FieldDescriptor): "number" | "text" | "url" {
   if (field.type === "number") return "number";
@@ -27,6 +29,7 @@ export function ItemForm({
   const [values, setValues] = useState<Record<string, string>>(initialValues);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUploadingId, setImageUploadingId] = useState<string | null>(null);
 
   const setField = useCallback((id: string, value: string) => {
     setValues((prev) => ({ ...prev, [id]: value }));
@@ -68,21 +71,88 @@ export function ItemForm({
         <form onSubmit={handleSubmit} className="add-item-page__form">
           <div className="item-page__fields">
             {availableFields.map((field) => (
-              <div key={field.id} className="item-page__field add-item-page__field">
+              <div
+                key={field.id}
+                className={
+                  field.type === "image"
+                    ? "item-page__field add-item-page__field add-item-page__field--image"
+                    : "item-page__field add-item-page__field"
+                }
+              >
                 <label
                   htmlFor={`add-item-${field.id}`}
                   className="item-page__field-key add-item-page__label"
                 >
                   {field.humanReadableName}
                 </label>
-                <input
-                  id={`add-item-${field.id}`}
-                  type={getInputType(field)}
-                  className="add-item-page__input"
-                  value={values[field.id] ?? ""}
-                  onChange={(e) => setField(field.id, e.target.value)}
-                  disabled={saving}
-                />
+                {field.type === "image" ? (
+                  <div className="add-item-page__image-field">
+                    {values[field.id]?.trim() ? (
+                      <a
+                        href={values[field.id]}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="item-page__field-image-link"
+                      >
+                        <img
+                          src={values[field.id]}
+                          alt=""
+                          className="item-page__field-image-thumb"
+                        />
+                      </a>
+                    ) : null}
+                    <div className="add-item-page__image-actions">
+                      <input
+                        id={`add-item-${field.id}`}
+                        type="file"
+                        accept="image/*"
+                        className="add-item-page__file-input"
+                        disabled={saving || imageUploadingId !== null}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = "";
+                          if (!file) return;
+                          setImageUploadingId(field.id);
+                          setError(null);
+                          try {
+                            const url = await uploadItemImage(file);
+                            setField(field.id, url);
+                          } catch (err) {
+                            setError(
+                              err instanceof Error
+                                ? err.message
+                                : "Failed to upload image",
+                            );
+                          } finally {
+                            setImageUploadingId(null);
+                          }
+                        }}
+                      />
+                      {values[field.id]?.trim() ? (
+                        <button
+                          type="button"
+                          className="add-item-page__clear-image"
+                          disabled={saving || imageUploadingId !== null}
+                          onClick={() => setField(field.id, "")}
+                        >
+                          Remove image
+                        </button>
+                      ) : null}
+                    </div>
+                    {imageUploadingId === field.id ? (
+                      <p className="add-item-page__image-status">Uploading…</p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <input
+                    id={`add-item-${field.id}`}
+                    type={getInputType(field)}
+                    className="add-item-page__input"
+                    value={values[field.id] ?? ""}
+                    onChange={(e) => setField(field.id, e.target.value)}
+                    disabled={saving}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -90,7 +160,7 @@ export function ItemForm({
             <button
               type="submit"
               className="item-page__nfc-button add-item-page__submit"
-              disabled={saving}
+              disabled={saving || imageUploadingId !== null}
             >
               {saving ? "Saving…" : submitLabel}
             </button>
