@@ -1,7 +1,7 @@
 export interface FieldDescriptor {
   id: string;
   humanReadableName: string;
-  type: "number" | "string" | "url" | "image";
+  type: "number" | "string" | "markdown" | "url" | "image";
 }
 
 export interface FieldValue {
@@ -20,7 +20,7 @@ export const availableFields: FieldDescriptor[] = [
   {
     id: "description",
     humanReadableName: "Description",
-    type: "string",
+    type: "markdown",
   },
   {
     id: "buying_url",

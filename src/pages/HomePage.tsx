@@ -8,6 +8,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MarkdownView } from "../components/MarkdownView";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import type { InventoryItem } from "../common";
 
@@ -136,14 +137,17 @@ export function HomePage() {
                   (item["description"] as string | undefined) ?? "";
                 return (
                   <li key={item.id} className="home__list-item">
-                    <Link to={`/item/${item.id}`} className="home__item-link">
-                      <span className="home__item-name">{name}</span>
-                      {description && (
-                        <span className="home__item-description">
-                          {description}
-                        </span>
+                    <div className="home__list-item-card">
+                      <Link to={`/item/${item.id}`} className="home__item-link">
+                        <span className="home__item-name">{name}</span>
+                      </Link>
+                      {description.trim() !== "" && (
+                        <MarkdownView
+                          markdown={description}
+                          className="home__item-description markdown-view--compact"
+                        />
                       )}
-                    </Link>
+                    </div>
                   </li>
                 );
               })}

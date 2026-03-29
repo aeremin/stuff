@@ -76,7 +76,9 @@ export function ItemForm({
                 className={
                   field.type === "image"
                     ? "item-page__field add-item-page__field add-item-page__field--image"
-                    : "item-page__field add-item-page__field"
+                    : field.type === "markdown"
+                      ? "item-page__field add-item-page__field add-item-page__field--markdown"
+                      : "item-page__field add-item-page__field"
                 }
               >
                 <label
@@ -85,7 +87,16 @@ export function ItemForm({
                 >
                   {field.humanReadableName}
                 </label>
-                {field.type === "image" ? (
+                {field.type === "markdown" ? (
+                  <textarea
+                    id={`add-item-${field.id}`}
+                    className="add-item-page__input add-item-page__textarea"
+                    rows={8}
+                    value={values[field.id] ?? ""}
+                    onChange={(e) => setField(field.id, e.target.value)}
+                    disabled={saving}
+                  />
+                ) : field.type === "image" ? (
                   <div className="add-item-page__image-field">
                     {values[field.id]?.trim() ? (
                       <a

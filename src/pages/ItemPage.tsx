@@ -1,6 +1,7 @@
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { MarkdownView } from "../components/MarkdownView";
 import { availableFields } from "../schema";
 import type { FieldDescriptor } from "../schema";
 import { db, INVENTORY_COLLECTION } from "../firebase";
@@ -154,6 +155,16 @@ export function ItemPage() {
         </a>
       );
     }
+    if (
+      type === "markdown" &&
+      typeof value === "string" &&
+      value.trim() !== ""
+    ) {
+      return (
+        <MarkdownView markdown={value} className="item-page__markdown" />
+      );
+    }
+    if (type === "markdown") return "";
     if (value !== null && typeof value === "object") {
       return JSON.stringify(value);
     }
@@ -197,7 +208,14 @@ export function ItemPage() {
             if (!(field.id in item)) return null;
             const value = item[field.id];
             return (
-              <div key={field.id} className="item-page__field">
+              <div
+                key={field.id}
+                className={
+                  field.type === "markdown"
+                    ? "item-page__field item-page__field--markdown"
+                    : "item-page__field"
+                }
+              >
                 <dt className="item-page__field-key">
                   {field.humanReadableName}
                 </dt>

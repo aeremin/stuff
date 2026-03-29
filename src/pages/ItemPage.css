@@ -109,6 +109,10 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
+.item-page__field--markdown {
+  align-items: start;
+}
+
 .item-page__field:last-child {
   border-bottom: none;
 }
@@ -125,6 +129,10 @@
   font-size: 0.95rem;
   color: #e5e7eb;
   word-break: break-word;
+}
+
+.item-page__markdown {
+  color: #e5e7eb;
 }
 
 .item-page__field-link {
@@ -204,6 +212,10 @@
   }
 
   .item-page__field-value {
+    color: #1e293b;
+  }
+
+  .item-page__markdown {
     color: #1e293b;
   }
 
