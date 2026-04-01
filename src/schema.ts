@@ -54,8 +54,8 @@ export const availableFields: FieldDescriptor[] = [
     onlyForKinds: [ItemKind.Screw],
   },
   {
-    id: "length_below_head",
-    humanReadableName: "Length below head",
+    id: "nominal_length",
+    humanReadableName: "Nominal length",
     type: "number",
     onlyForKinds: [ItemKind.Screw],
   },
