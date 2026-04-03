@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { MarkdownView } from "../components/MarkdownView";
 import { searchItems } from "../algolia";
+import { db, INVENTORY_COLLECTION } from "../firebase";
 import type { InventoryItem } from "../common";
 
 export function HomePage() {
@@ -10,6 +12,53 @@ export function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+
+  const [lastViewedItems, setLastViewedItems] = useState<InventoryItem[]>(
+    [],
+  );
+  const [lastViewedLoading, setLastViewedLoading] = useState(true);
+  const [lastViewedError, setLastViewedError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchLastViewed() {
+      setLastViewedLoading(true);
+      setLastViewedError(null);
+      try {
+        const q = query(
+          collection(db!, INVENTORY_COLLECTION),
+          orderBy("lastViewed", "desc"),
+          limit(5),
+        );
+        const snap = await getDocs(q);
+        if (cancelled) return;
+
+        const results = snap.docs.map((d) => {
+          const data = d.data() as Record<string, unknown>;
+          const name =
+            typeof data.name === "string" ? data.name : "(no name)";
+          return { id: d.id, ...data, name } as InventoryItem;
+        });
+        setLastViewedItems(results);
+      } catch (err) {
+        if (!cancelled) {
+          setLastViewedError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load last viewed items.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLastViewedLoading(false);
+      }
+    }
+
+    fetchLastViewed();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const trimmed = searchTerm.trim();
@@ -65,7 +114,7 @@ export function HomePage() {
 
       <div className="home__search">
         <label className="home__search-label">
-          <span className="home__search-label-text">Search items</span>
+          <span className="home__section-title">Search items</span>
           <input
             type="text"
             className="home__search-input"
@@ -77,7 +126,48 @@ export function HomePage() {
       </div>
 
       {!searchTerm.trim() && (
-        <p className="home__hint">Type to search your items.</p>
+        <div>
+          <h2 className="home__section-title">Last viewed</h2>
+          <div className="home__results">
+            {lastViewedLoading && <p className="home__status">Loading…</p>}
+            {lastViewedError && (
+              <p className="home__status home__status--error">
+                {lastViewedError}
+              </p>
+            )}
+            {!lastViewedLoading && !lastViewedError && lastViewedItems.length === 0 && (
+              <p className="home__status">No recently viewed items.</p>
+            )}
+            {!lastViewedLoading && !lastViewedError && lastViewedItems.length > 0 && (
+              <ul className="home__list">
+                {lastViewedItems.map((item) => {
+                  const name =
+                    (item.name as string | undefined) ?? "(no name)";
+                  const description =
+                    (item["description"] as string | undefined) ?? "";
+                  return (
+                    <li key={item.id} className="home__list-item">
+                      <div className="home__list-item-card">
+                        <Link
+                          to={`/item/${item.id}`}
+                          className="home__item-link"
+                        >
+                          <span className="home__item-name">{name}</span>
+                        </Link>
+                        {description.trim() !== "" && (
+                          <MarkdownView
+                            markdown={description}
+                            className="home__item-description markdown-view--compact"
+                          />
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
       )}
 
       {searchTerm.trim() && (
