@@ -123,12 +123,12 @@ h1 {
 
 .user-name {
   font-weight: 600;
-  color: #e5e7eb;
+  color: #cbd5e1;
 }
 
 .user-email {
   font-size: 0.85rem;
-  color: #9ca3af;
+  color: #94a3b8;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
