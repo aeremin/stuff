@@ -1,4 +1,4 @@
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MarkdownView } from "../components/MarkdownView";
@@ -44,6 +44,12 @@ export function ItemPage() {
 
         if (docSnap.exists()) {
           setItem(docSnap.data() as InventoryItem);
+          // Track that the user opened the item detail page.
+          void updateDoc(docRef, { lastViewed: serverTimestamp() }).catch(
+            () => {
+              // Intentionally ignore write errors (view tracking is best-effort).
+            },
+          );
         } else {
           setItem(null);
         }
@@ -117,7 +123,11 @@ export function ItemPage() {
 
   const knownFieldIds = new Set(availableFields.map((f) => f.id));
   const extraKeys = Object.keys(item).filter(
-    (k) => k !== "id" && !knownFieldIds.has(k),
+    (k) =>
+      k !== "id" &&
+      k !== "lastEdited" &&
+      k !== "lastViewed" &&
+      !knownFieldIds.has(k),
   );
   const itemKind = String(item["kind"] ?? "");
 

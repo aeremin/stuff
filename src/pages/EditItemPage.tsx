@@ -1,4 +1,4 @@
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { availableFields } from "../schema";
@@ -38,6 +38,12 @@ export function EditItemPage() {
         if (cancelled) return;
         if (docSnap.exists()) {
           setItem(docSnap.data() as InventoryItem);
+          // Track that the user opened the edit page for this item.
+          void updateDoc(docRef, { lastViewed: serverTimestamp() }).catch(
+            () => {
+              // Intentionally ignore write errors (view tracking is best-effort).
+            },
+          );
         } else {
           setItem(null);
         }
@@ -99,7 +105,10 @@ export function EditItemPage() {
       }
       onSubmit={async (payload) => {
         const docRef = doc(db, INVENTORY_COLLECTION, id!);
-        await updateDoc(docRef, payload);
+        await updateDoc(docRef, {
+          ...payload,
+          lastEdited: serverTimestamp(),
+        });
         navigate(`/item/${id}`);
       }}
     />

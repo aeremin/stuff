@@ -1,4 +1,4 @@
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { availableFields } from "../schema";
 import { db } from "../firebase";
@@ -26,7 +26,11 @@ export function AddItemPage() {
       onSubmit={async (payload) => {
         const docRef = await addDoc(
           collection(db, INVENTORY_COLLECTION),
-          payload,
+          {
+            ...payload,
+            lastEdited: serverTimestamp(),
+            lastViewed: serverTimestamp(),
+          },
         );
         navigate(`/item/${docRef.id}`);
       }}
