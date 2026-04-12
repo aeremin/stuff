@@ -315,6 +315,62 @@ h1 {
   color: #fbbf24;
 }
 
+.purefil {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.purefil__title {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.purefil__error {
+  color: #fecaca;
+}
+
+.purefil__chart-container {
+  width: 100%;
+  min-height: 400px;
+}
+
+.purefil__tooltip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.purefil__tooltip-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.purefil__tooltip-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.purefil__tooltip-color {
+  color: #e5e7eb;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.purefil__tooltip-amount {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #0f172a;

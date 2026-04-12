@@ -10,6 +10,7 @@ import { AddItemPage } from "./pages/AddItemPage.tsx";
 import { EditItemPage } from "./pages/EditItemPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
+import { PurefilPage } from "./pages/PurefilPage.tsx";
 import "./style.css";
 
 interface GoogleUser {
@@ -215,6 +216,15 @@ export function App() {
           <div className="app app--authorized app--with-header">
             <AppHeader user={currentUser} onSignOut={handleSignOut} />
             <AddItemPage />
+          </div>
+        }
+      />
+      <Route
+        path="/purefil"
+        element={
+          <div className="app app--authorized app--with-header">
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
+            <PurefilPage />
           </div>
         }
       />
