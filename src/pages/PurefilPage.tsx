@@ -22,6 +22,7 @@ interface ChartItem {
   color: string;
   hexColor: string;
   amount: number;
+  isRainbow: boolean;
 }
 
 function resolveColorToHex(colorStr: string): string {
@@ -72,11 +73,14 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.[0]) return null;
   const item = payload[0].payload;
+  const swatchBg = item.isRainbow
+    ? "linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)"
+    : item.hexColor;
   return (
     <div className="purefil__tooltip">
       <div
         className="purefil__tooltip-swatch"
-        style={{ background: item.hexColor }}
+        style={{ background: swatchBg }}
       />
       <div className="purefil__tooltip-text">
         <span className="purefil__tooltip-color">{item.color}</span>
@@ -88,8 +92,23 @@ function CustomTooltip({
 
 function ClickableBarShape(props: BarShapeProps) {
   const { x, y, width, height, fill, background } = props;
+  const item = props.payload as ChartItem | undefined;
+  const gradientId = `rainbow-${item?.id ?? ""}`;
   return (
     <g cursor="pointer">
+      {item?.isRainbow && (
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#f00" />
+            <stop offset="17%" stopColor="#ff0" />
+            <stop offset="33%" stopColor="#0f0" />
+            <stop offset="50%" stopColor="#0ff" />
+            <stop offset="67%" stopColor="#00f" />
+            <stop offset="83%" stopColor="#f0f" />
+            <stop offset="100%" stopColor="#f00" />
+          </linearGradient>
+        </defs>
+      )}
       {background && background.x != null && background.y != null && (
         <rect
           x={background.x}
@@ -100,7 +119,14 @@ function ClickableBarShape(props: BarShapeProps) {
         />
       )}
       {height > 0 && (
-        <rect x={x} y={y} width={width} height={height} fill={fill} rx={4} />
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={item?.isRainbow ? `url(#${gradientId})` : fill}
+          rx={4}
+        />
       )}
     </g>
   );
@@ -135,16 +161,21 @@ export function PurefilPage() {
           .filter((item) => String(item.name).startsWith("Purefil"))
           .map((item) => {
             const colorStr = String(item["color"] ?? "");
+            const isRainbow = /farbwechsel/i.test(colorStr);
             return {
               id: item.id,
               name: item.name,
               color: colorStr,
-              hexColor: resolveColorToHex(colorStr),
+              hexColor: isRainbow ? "#888888" : resolveColorToHex(colorStr),
               amount: Number(item["amount"]) || 0,
+              isRainbow,
             };
           });
 
-        chartItems.sort((a, b) => hexToHue(a.hexColor) - hexToHue(b.hexColor));
+        chartItems.sort((a, b) => {
+          if (a.isRainbow !== b.isRainbow) return a.isRainbow ? 1 : -1;
+          return hexToHue(a.hexColor) - hexToHue(b.hexColor);
+        });
         setItems(chartItems);
       } catch (err) {
         if (!cancelled) {
