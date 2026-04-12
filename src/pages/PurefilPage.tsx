@@ -5,6 +5,7 @@ import {
   Bar,
   BarChart,
   Cell,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -209,6 +210,12 @@ export function PurefilPage() {
               tick={{ fill: "#94a3b8", fontSize: 12 }}
               axisLine={{ stroke: "#334155" }}
               tickLine={false}
+            />
+            <ReferenceLine
+              y={1000}
+              stroke="#94a3b8"
+              strokeDasharray="6 4"
+              label={{ value: "1000", fill: "#94a3b8", fontSize: 12, position: "left" }}
             />
             <Tooltip
               content={<CustomTooltip />}
