@@ -4,6 +4,7 @@ export const ItemKind = {
   Tool: "Tool",
   ElectronicPart: "Electronic part",
   Device: "Device",
+  Lego: "Lego",
   Other: "Other",
 } as const;
 
@@ -113,5 +114,11 @@ export const availableFields: FieldDescriptor[] = [
     id: "photo",
     humanReadableName: "Photo",
     type: "image",
+  },
+  {
+    id: "set_number",
+    humanReadableName: "Set number",
+    type: "number",
+    onlyForKinds: ["Lego"],
   },
 ];
