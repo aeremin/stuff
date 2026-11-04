@@ -52,18 +52,18 @@ Firebase config and Algolia keys are hardcoded in [`src/firebase.ts`](src/fireba
 
 ## Deployment
 
-GitHub Actions deploys to Firebase Hosting:
+GitHub Actions deploys to Firebase:
 
-- every push to `master` goes to the live site;
-- every pull request from this repository gets a preview channel.
+- every push to `master` deploys Cloud Functions (the [MCP server](#mcp-server)) and then the live site;
+- every pull request from this repository gets a Hosting preview channel (functions are not deployed from pull requests).
 
-The workflows deploy hosting only. Rule, index and function changes have to be deployed by hand:
+Both use the service account in the `FIREBASE_SERVICE_ACCOUNT_STUFF_11062` secret. Deploying functions needs more than the Hosting roles the Firebase CLI grants it, typically Cloud Functions Admin, Cloud Run Admin, Service Account User, Artifact Registry Administrator and Service Usage Consumer; a failed run names any permission that is still missing.
+
+Rule and index changes have to be deployed by hand:
 
 ```bash
-firebase deploy --only firestore,storage,functions
+firebase deploy --only firestore,storage
 ```
-
-Hosting rewrites point at the `mcp` function, so deploy the function before the first hosting deploy that contains those rewrites.
 
 ## MCP server
 
