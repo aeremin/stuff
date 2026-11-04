@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { auth } from "./firebase.ts";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
+import { ConnectPage } from "./pages/ConnectPage.tsx";
 import { EditItemPage } from "./pages/EditItemPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
@@ -216,6 +217,15 @@ export function App() {
           <div className="app app--authorized app--with-header">
             <AppHeader user={currentUser} onSignOut={handleSignOut} />
             <AddItemPage />
+          </div>
+        }
+      />
+      <Route
+        path="/connect"
+        element={
+          <div className="app app--authorized app--with-header">
+            <AppHeader user={currentUser} onSignOut={handleSignOut} />
+            <ConnectPage />
           </div>
         }
       />

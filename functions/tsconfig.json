@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    // The item schema is shared with the web app, so the build reaches one
+    // level up for ../src/schema.ts. The output therefore mirrors the repo
+    // layout: lib/functions/src/*.js and lib/src/schema.js.
+    "rootDir": "..",
+    "outDir": "lib",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src", "../src/schema.ts"]
+}

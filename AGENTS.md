@@ -4,7 +4,7 @@
 
 ### Overview
 
-"Stuff" is a single-page React + TypeScript inventory management app built with Vite. All backend services (Firebase Auth, Firestore, Storage, Algolia) are remote SaaS — there are no local servers, databases, or containers to run.
+"Stuff" is a single-page React + TypeScript inventory management app built with Vite. All backend services (Firebase Auth, Firestore, Storage, Algolia) are remote SaaS — there are no local servers, databases, or containers to run. The `functions/` directory holds a separate Node package: the remote MCP server (a Cloud Function), described in `README.md`.
 
 ### Commands
 
@@ -13,6 +13,7 @@ See `package.json` scripts and `README.md` for details. Key commands:
 - `npm run dev` — start Vite dev server (port 5173)
 - `npm run build` — TypeScript check + Vite production build
 - `npx tsc --noEmit` — type-check only (this project has no ESLint or separate linter)
+- `npm --prefix functions run build` — type-check and compile the MCP server function (run `npm --prefix functions install` first)
 
 ### Important notes
 

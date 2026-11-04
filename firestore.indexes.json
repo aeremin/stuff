@@ -47,5 +47,26 @@
   //   },
   // ]
   "indexes": [],
-  "fieldOverrides": []
+  // TTL policies: Firestore deletes expired MCP OAuth records (see
+  // functions/src/oauth.ts) on its own, usually within a day of expiresAt.
+  "fieldOverrides": [
+    {
+      "collectionGroup": "mcpAuthRequests",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "mcpAuthCodes",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "mcpTokens",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    }
+  ]
 }
