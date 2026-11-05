@@ -1,18 +1,15 @@
-import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ItemLoadStatus } from "../components/ItemLoadStatus";
 import { MarkdownView } from "../components/MarkdownView";
 import { availableFields, isFieldVisibleForItemKind } from "../schema";
 import type { FieldDescriptor } from "../schema";
-import { db, INVENTORY_COLLECTION } from "../firebase";
+import { useItem } from "../useItem";
 import "./ItemPage.css";
-import type { InventoryItem } from "../common";
 
 export function ItemPage() {
   const { id } = useParams<{ id: string }>();
-  const [item, setItem] = useState<InventoryItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const state = useItem(id);
   const [nfcSupported, setNfcSupported] = useState(false);
   const [nfcWriting, setNfcWriting] = useState(false);
   const [nfcStatus, setNfcStatus] = useState<string | null>(null);
@@ -22,53 +19,6 @@ export function ItemPage() {
       setNfcSupported(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function fetchItem() {
-      const docId = id;
-      if (!docId) return;
-      try {
-        const docRef = doc(db!, INVENTORY_COLLECTION, docId);
-        const docSnap = await getDoc(docRef);
-
-        if (cancelled) {
-          return;
-        }
-
-        if (docSnap.exists()) {
-          setItem(docSnap.data() as InventoryItem);
-          // Track that the user opened the item detail page.
-          void updateDoc(docRef, { lastViewed: serverTimestamp() }).catch(
-            () => {
-              // Intentionally ignore write errors (view tracking is best-effort).
-            },
-          );
-        } else {
-          setItem(null);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to load item");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchItem();
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
 
   const handleWriteNfc = async () => {
     setNfcStatus(null);
@@ -91,35 +41,10 @@ export function ItemPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="item-page">
-        <div className="item-page__loading">Loading…</div>
-      </div>
-    );
+  if (state.status !== "loaded") {
+    return <ItemLoadStatus state={state} />;
   }
-
-  if (error) {
-    return (
-      <div className="item-page">
-        <div className="item-page__error">{error}</div>
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
-      </div>
-    );
-  }
-
-  if (!item) {
-    return (
-      <div className="item-page">
-        <div className="item-page__not-found">Item not found</div>
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
-      </div>
-    );
-  }
+  const { item } = state;
 
   const knownFieldIds = new Set(availableFields.map((f) => f.id));
   const extraKeys = Object.keys(item).filter(
@@ -193,7 +118,7 @@ export function ItemPage() {
         <h1 className="item-page__title">{item["name"] as string}</h1>
         <div className="item-page__actions">
           <Link
-            to={`/item/${id}/edit`}
+            to={`/item/${item.id}/edit`}
             className="item-page__nfc-button item-page__edit-button"
           >
             Edit

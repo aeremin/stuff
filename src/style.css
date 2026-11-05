@@ -72,13 +72,9 @@ h1 {
 .app--authorized {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
-}
-
-.app--with-header {
-  width: 100%;
-  max-width: 720px;
   align-items: stretch;
+  gap: 1.75rem;
+  max-width: 720px;
 }
 
 .app-header {

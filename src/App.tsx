@@ -1,14 +1,19 @@
 import type { User } from "firebase/auth";
-import { useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { lazy, Suspense, useState } from "react";
+import { Outlet, Route, Routes } from "react-router-dom";
 import { signIn, signOut, useSession } from "./auth.ts";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
 import { ConnectPage } from "./pages/ConnectPage.tsx";
 import { EditItemPage } from "./pages/EditItemPage.tsx";
 import { HomePage } from "./pages/HomePage.tsx";
 import { ItemPage } from "./pages/ItemPage.tsx";
-import { PurefilPage } from "./pages/PurefilPage.tsx";
+import { NotFoundPage } from "./pages/NotFoundPage.tsx";
 import "./style.css";
+
+// Loaded on demand: it pulls in the chart library and the Pantone table.
+const PurefilPage = lazy(() =>
+  import("./pages/PurefilPage.tsx").then((m) => ({ default: m.PurefilPage })),
+);
 
 function LoginView() {
   const [busy, setBusy] = useState(false);
@@ -80,6 +85,20 @@ function AppHeader({ user }: { user: User }) {
   );
 }
 
+/** The signed-in page frame: header on top, the current route below. */
+function AppLayout({ user }: { user: User }) {
+  return (
+    <div className="app app--authorized">
+      <AppHeader user={user} />
+      <main className="app-main">
+        <Suspense fallback={<p className="home__status">Loading…</p>}>
+          <Outlet />
+        </Suspense>
+      </main>
+    </div>
+  );
+}
+
 export function App() {
   const session = useSession();
 
@@ -90,67 +109,17 @@ export function App() {
     return <LoginView />;
   }
 
-  const currentUser = session.user;
-
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <div className="app app--authorized">
-            <AppHeader user={currentUser} />
-
-            <main className="app-main">
-              <HomePage />
-            </main>
-          </div>
-        }
-      />
-      <Route
-        path="/add"
-        element={
-          <div className="app app--authorized app--with-header">
-            <AppHeader user={currentUser} />
-            <AddItemPage />
-          </div>
-        }
-      />
-      <Route
-        path="/connect"
-        element={
-          <div className="app app--authorized app--with-header">
-            <AppHeader user={currentUser} />
-            <ConnectPage />
-          </div>
-        }
-      />
-      <Route
-        path="/purefil"
-        element={
-          <div className="app app--authorized app--with-header">
-            <AppHeader user={currentUser} />
-            <PurefilPage />
-          </div>
-        }
-      />
-      <Route
-        path="/item/:id"
-        element={
-          <div className="app app--authorized app--with-header">
-            <AppHeader user={currentUser} />
-            <ItemPage />
-          </div>
-        }
-      />
-      <Route
-        path="/item/:id/edit"
-        element={
-          <div className="app app--authorized app--with-header">
-            <AppHeader user={currentUser} />
-            <EditItemPage />
-          </div>
-        }
-      />
+      <Route element={<AppLayout user={session.user} />}>
+        <Route index element={<HomePage />} />
+        <Route path="add" element={<AddItemPage />} />
+        <Route path="connect" element={<ConnectPage />} />
+        <Route path="purefil" element={<PurefilPage />} />
+        <Route path="item/:id" element={<ItemPage />} />
+        <Route path="item/:id/edit" element={<EditItemPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 }

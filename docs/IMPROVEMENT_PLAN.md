@@ -1,6 +1,6 @@
 # Improvement plan
 
-A review of the whole repository (web app, MCP server, rules and CI) from November 2026. Nothing in this file has been implemented yet; line numbers refer to the code as it was at the time of the review.
+A review of the whole repository (web app, MCP server, rules and CI) from November 2026. Items marked ✅ have been done since; line numbers refer to the code as it was at the time of the review.
 
 **Overall:** the code is in good shape. It type-checks and builds cleanly. The MCP/OAuth server is careful work: tokens are stored only as hashes, authorization codes are single-use and checked inside transactions, refresh tokens rotate, and every request re-checks the allowed-email list. Most of what needs work is in the web app.
 
@@ -32,6 +32,8 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
 4. **Deploy rules and indexes from CI** instead of by hand, so what's deployed can't drift from the repo.
 
 ## Phase 3 — Code structure
+
+✅ *Done. All signed-in pages share one layout route (`AppLayout` in `src/App.tsx`), with a 404 page. `src/useItem.ts` and `src/components/ItemList.tsx` replace the duplicated code. `/purefil` is loaded on demand; the main bundle is now 881 KB (256 KB gzipped), and the Purefil chunk is 506 KB. The home page is now as wide as the other pages (720 px instead of 640 px). `useItem` returns the item with its `id`, which also fixes the first of Phase 1's "small ones", and `AddItemPage` now imports `INVENTORY_COLLECTION`, which fixes the second.*
 
 - **Routing:** [`src/App.tsx`](../src/App.tsx) repeats the header wrapper six times. Replace it with one layout route using `<Outlet/>`, and add a 404 route.
 - **Shared code:**

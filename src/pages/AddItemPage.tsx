@@ -1,10 +1,8 @@
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { Link, useNavigate } from "react-router-dom";
 import { availableFields } from "../schema";
-import { db } from "../firebase";
+import { db, INVENTORY_COLLECTION } from "../firebase";
 import { ItemForm } from "./ItemForm";
-
-const INVENTORY_COLLECTION = "items";
 
 const initialValues = Object.fromEntries(
   availableFields.map((f) => [f.id, ""]),

@@ -66,7 +66,6 @@ export function ConnectPage() {
     try {
       let idToken: string | undefined;
       if (approve) {
-        if (!auth) throw new Error("Firebase Auth is not configured.");
         await auth.authStateReady();
         if (!auth.currentUser) {
           throw new Error(
