@@ -18,6 +18,6 @@ See `package.json` scripts and `README.md` for details. Key commands:
 ### Important notes
 
 - **No test framework**: There are no automated tests in this project. Type-checking via `tsc --noEmit` is the only static analysis available.
-- **Authentication**: Google Sign-In requires valid OAuth origins. In the Cloud Agent VM the Google OAuth flow will return an `origin_mismatch` error because `localhost:5173` is not an authorized origin for the Firebase project. The app still renders and routes work correctly without being signed in.
+- **Authentication**: Sign-in is Firebase Auth's Google popup (`signInWithPopup`, see `src/auth.ts`), so it needs a real Google account on one of the allowed emails, and the page's domain must be an authorized domain in Firebase Auth. In the Cloud Agent VM you can only check the app up to the sign-in screen.
 - **Firestore rules**: Write access is restricted to two specific email addresses. Full CRUD testing requires one of those accounts or modifying `firestore.rules`.
 - **No `.env` files**: Firebase config and Algolia keys are hardcoded in source (not secret — they are client-side keys).
