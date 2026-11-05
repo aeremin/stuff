@@ -11,6 +11,14 @@ function getInputType(field: FieldDescriptor): "number" | "text" | "url" {
   return "text";
 }
 
+/** Parses a number field's value; blank is 0. Returns null if it isn't a number. */
+function parseNumberInput(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (trimmed === "") return 0;
+  const num = Number(trimmed);
+  return Number.isFinite(num) ? num : null;
+}
+
 function SelectFieldInput(props: {
   field: FieldDescriptor;
   value: string;
@@ -67,21 +75,27 @@ export function ItemForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    const payload: Record<string, number | string> = {};
+    const currentKind = values.kind ?? "";
+    for (const field of availableFields) {
+      const raw = isFieldVisibleForItemKind(field, currentKind)
+        ? (values[field.id] ?? "")
+        : "";
+      if (field.type === "number") {
+        const num = parseNumberInput(raw);
+        if (num === null) {
+          setError(
+            `${field.humanReadableName}: "${raw}" is not a valid number.`,
+          );
+          return;
+        }
+        payload[field.id] = num;
+      } else {
+        payload[field.id] = raw;
+      }
+    }
     setSaving(true);
     try {
-      const payload: Record<string, number | string> = {};
-      const currentKind = values.kind ?? "";
-      for (const field of availableFields) {
-        const raw = isFieldVisibleForItemKind(field, currentKind)
-          ? (values[field.id] ?? "")
-          : "";
-        if (field.type === "number") {
-          const num = Number(raw);
-          payload[field.id] = Number.isNaN(num) ? 0 : num;
-        } else {
-          payload[field.id] = raw;
-        }
-      }
       await onSubmit(payload);
     } catch (err) {
       setError(
@@ -202,6 +216,9 @@ export function ItemForm({
                     id={`add-item-${field.id}`}
                     type={getInputType(field)}
                     className="add-item-page__input"
+                    {...(field.type === "number"
+                      ? { step: "any", inputMode: "decimal" as const }
+                      : {})}
                     value={values[field.id] ?? ""}
                     onChange={(e) => setField(field.id, e.target.value)}
                     disabled={saving}
