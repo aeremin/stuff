@@ -42,8 +42,12 @@ export const AUTH_CODE_TTL_SECONDS = 5 * 60;
 export const ACCESS_TOKEN_TTL_SECONDS = 60 * 60;
 export const REFRESH_TOKEN_TTL_SECONDS = 90 * 24 * 60 * 60;
 
+/**
+ * The Algolia index searched by search.ts. Its search key is the
+ * ALGOLIA_SEARCH_KEY secret, not part of the code: the index can be read by
+ * anyone holding a key, whatever the Firestore rules say.
+ */
 export const ALGOLIA = {
   appId: "214OQAKW3R",
-  searchKey: "0c6b5fa50ab0cf1463491a433316238c",
   indexName: "global",
 };
