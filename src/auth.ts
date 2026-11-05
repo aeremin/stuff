@@ -29,11 +29,6 @@ export function useSession(): Session {
       // storage unavailable; nothing to clean up
     }
 
-    if (!auth) {
-      setSession({ state: "signedOut" });
-      return;
-    }
-
     return onAuthStateChanged(auth, (user) => {
       setSession(user ? { state: "signedIn", user } : { state: "signedOut" });
     });
@@ -55,7 +50,6 @@ const CANCELLED_SIGN_IN = new Set([
  * third-party storage. Resolves quietly if the user closes the popup.
  */
 export async function signIn(): Promise<void> {
-  if (!auth) throw new Error("Firebase Auth is not configured.");
   try {
     await signInWithPopup(auth, new GoogleAuthProvider());
   } catch (err) {
@@ -68,5 +62,5 @@ export async function signIn(): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
-  if (auth) await firebaseSignOut(auth);
+  await firebaseSignOut(auth);
 }

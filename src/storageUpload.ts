@@ -23,9 +23,6 @@ export async function uploadItemImage(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) {
     throw new Error("File must be an image.");
   }
-  if (!storage) {
-    throw new Error("Storage is not configured.");
-  }
   const ext = extensionFromFile(file);
   const path = `item-images/${crypto.randomUUID()}.${ext}`;
   const storageRef = ref(storage, path);

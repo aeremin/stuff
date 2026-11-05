@@ -5,6 +5,8 @@ const appId = "214OQAKW3R";
 const searchKey = "0c6b5fa50ab0cf1463491a433316238c";
 const indexName = "global";
 
+const client = algoliasearch(appId, searchKey);
+
 function hitToItem(hit: Record<string, unknown> & { objectID: string }): InventoryItem {
   const item: Record<string, unknown> = { id: hit.objectID };
   for (const [key, value] of Object.entries(hit)) {
@@ -25,7 +27,6 @@ export async function searchItems(query: string): Promise<InventoryItem[]> {
     return [];
   }
 
-  const client = algoliasearch(appId, searchKey);
   const response = await client.searchSingleIndex<Record<string, unknown>>({
     indexName,
     searchParams: {

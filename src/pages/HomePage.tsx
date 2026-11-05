@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
-import { MarkdownView } from "../components/MarkdownView";
+import { ItemList } from "../components/ItemList";
 import { searchItems } from "../algolia";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import type { InventoryItem } from "../common";
@@ -27,7 +27,7 @@ export function HomePage() {
       setLastViewedError(null);
       try {
         const q = query(
-          collection(db!, INVENTORY_COLLECTION),
+          collection(db, INVENTORY_COLLECTION),
           orderBy("lastViewed", "desc"),
           limit(5),
         );
@@ -139,32 +139,7 @@ export function HomePage() {
               <p className="home__status">No recently viewed items.</p>
             )}
             {!lastViewedLoading && !lastViewedError && lastViewedItems.length > 0 && (
-              <ul className="home__list">
-                {lastViewedItems.map((item) => {
-                  const name =
-                    (item.name as string | undefined) ?? "(no name)";
-                  const description =
-                    (item["description"] as string | undefined) ?? "";
-                  return (
-                    <li key={item.id} className="home__list-item">
-                      <div className="home__list-item-card">
-                        <Link
-                          to={`/item/${item.id}`}
-                          className="home__item-link"
-                        >
-                          <span className="home__item-name">{name}</span>
-                        </Link>
-                        {description.trim() !== "" && (
-                          <MarkdownView
-                            markdown={description}
-                            className="home__item-description markdown-view--compact"
-                          />
-                        )}
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <ItemList items={lastViewedItems} />
             )}
           </div>
         </div>
@@ -178,28 +153,7 @@ export function HomePage() {
             <p className="home__status">No items match your search.</p>
           )}
           {!loading && !error && items.length > 0 && (
-            <ul className="home__list">
-              {items.map((item) => {
-                const name = (item.name as string | undefined) ?? "(no name)";
-                const description =
-                  (item["description"] as string | undefined) ?? "";
-                return (
-                  <li key={item.id} className="home__list-item">
-                    <div className="home__list-item-card">
-                      <Link to={`/item/${item.id}`} className="home__item-link">
-                        <span className="home__item-name">{name}</span>
-                      </Link>
-                      {description.trim() !== "" && (
-                        <MarkdownView
-                          markdown={description}
-                          className="home__item-description markdown-view--compact"
-                        />
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
+            <ItemList items={items} />
           )}
         </div>
       )}

@@ -143,12 +143,6 @@ export function PurefilPage() {
     let cancelled = false;
 
     async function load() {
-      if (!db) {
-        setError("Database not available");
-        setLoading(false);
-        return;
-      }
-
       try {
         const q = query(
           collection(db, INVENTORY_COLLECTION),
