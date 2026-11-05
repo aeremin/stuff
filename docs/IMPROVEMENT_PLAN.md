@@ -10,14 +10,13 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
 
 1. ✅ *Done: the link text is passed through again, and `node` is kept out of the HTML.* **Links in markdown render with no text.** [`src/components/MarkdownView.tsx:18`](../src/components/MarkdownView.tsx) pulls `children` out of the props and never passes it on. Rendering a link gives `<a href="…" node="[object Object]" target="_blank"></a>`: the link is invisible, and an internal `node` prop also ends up in the HTML.
 2. ✅ *Done: number inputs have `step="any"` (the +/- buttons still change the value by 1) and `inputMode="decimal"`. A value that isn't a number shows an error naming the field instead of being saved as 0; a blank field is still saved as 0. (Chrome did let `100.5` through with no `step` after all, so the original report was only partly right.)* **The form rejects decimal numbers.** The number inputs at [`src/pages/ItemForm.tsx:201`](../src/pages/ItemForm.tsx) have no `step`, so the browser only accepts whole numbers. In Chromium, `2.5` and `0.05` fail with "Please enter a valid value", and the form won't submit. That makes shank diameter, price per piece and weight impossible to enter. Separately, input that can't be parsed (e.g. `2,5`) is saved as `0` without a warning (`ItemForm.tsx:80`). Fix: add `step="any"` and `inputMode="decimal"`, and show an error instead of storing 0.
-3. **Saving the edit form can undo stock changes made through MCP.** [`src/pages/EditItemPage.tsx:108`](../src/pages/EditItemPage.tsx) writes every field, including `amount`. If `adjust_amount` ran while the form was open, saving puts the old number back. Fix: write only the fields that changed, plus clearing fields that don't apply to the item's kind.
-4. ✅ *Done: the app now follows Firebase Auth (`src/auth.ts`). The "account isn't allowed" message was left out on purpose: it would cost a Firestore read on every load.* **Whether the user is signed in comes from a browser flag, not Firebase Auth** ([`src/App.tsx:162`](../src/App.tsx)). This causes three problems:
+3. ✅ *Done: the app now follows Firebase Auth (`src/auth.ts`). The "account isn't allowed" message was left out on purpose: it would cost a Firestore read on every load.* **Whether the user is signed in comes from a browser flag, not Firebase Auth** ([`src/App.tsx:162`](../src/App.tsx)). This causes three problems:
    - If Firebase sign-in fails, the app still shows the user as signed in (`App.tsx:96-100`).
    - When the Firebase session expires, the full app is shown but every request fails with permission errors.
    - If Google's sign-in script loads after React has mounted, the sign-in button may never appear, because the effect doesn't run again (`App.tsx:80`). This was worked out from the code, not reproduced.
 
    Fix: treat `onAuthStateChanged` as the only source of truth, sign in with `signInWithPopup(GoogleAuthProvider)`, and remove the Google sign-in script, the manual token parsing and the `revoke` call on sign-out. Also show a clear "this account isn't allowed" message.
-5. **Small ones:**
+4. **Small ones:**
    - `ItemPage` and `EditItemPage` store the item without its `id`, so `key={item.id}` is always `undefined`.
    - [`src/pages/AddItemPage.tsx:7`](../src/pages/AddItemPage.tsx) defines its own copy of `INVENTORY_COLLECTION`.
 
