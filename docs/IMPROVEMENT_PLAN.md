@@ -16,9 +16,6 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
    - If Google's sign-in script loads after React has mounted, the sign-in button may never appear, because the effect doesn't run again (`App.tsx:80`). This was worked out from the code, not reproduced.
 
    Fix: treat `onAuthStateChanged` as the only source of truth, sign in with `signInWithPopup(GoogleAuthProvider)`, and remove the Google sign-in script, the manual token parsing and the `revoke` call on sign-out. Also show a clear "this account isn't allowed" message.
-4. **Small ones:**
-   - `ItemPage` and `EditItemPage` store the item without its `id`, so `key={item.id}` is always `undefined`.
-   - [`src/pages/AddItemPage.tsx:7`](../src/pages/AddItemPage.tsx) defines its own copy of `INVENTORY_COLLECTION`.
 
 ## Phase 2 — Security and privacy
 
@@ -32,7 +29,7 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
 
 ## Phase 3 — Code structure
 
-✅ *Done. All signed-in pages share one layout route (`AppLayout` in `src/App.tsx`), with a 404 page. `src/useItem.ts` and `src/components/ItemList.tsx` replace the duplicated code. `/purefil` is loaded on demand; the main bundle is now 881 KB (256 KB gzipped), and the Purefil chunk is 506 KB. The home page is now as wide as the other pages (720 px instead of 640 px). `useItem` returns the item with its `id`, which also fixes the first of Phase 1's "small ones", and `AddItemPage` now imports `INVENTORY_COLLECTION`, which fixes the second.*
+✅ *Done. All signed-in pages share one layout route (`AppLayout` in `src/App.tsx`), with a 404 page. `src/useItem.ts` and `src/components/ItemList.tsx` replace the duplicated code. `/purefil` is loaded on demand; the main bundle is now 881 KB (256 KB gzipped), and the Purefil chunk is 506 KB. The home page is now as wide as the other pages (720 px instead of 640 px). `useItem` returns the item with its `id` (it used to be stored without one, so `key={item.id}` was `undefined`), and `AddItemPage` now imports `INVENTORY_COLLECTION` instead of defining its own copy.*
 
 - **Routing:** [`src/App.tsx`](../src/App.tsx) repeats the header wrapper six times. Replace it with one layout route using `<Outlet/>`, and add a 404 route.
 - **Shared code:**
