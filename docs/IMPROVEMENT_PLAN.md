@@ -1,0 +1,58 @@
+# Improvement plan
+
+A review of the whole repository (web app, MCP server, rules and CI) from November 2026. Nothing in this file has been implemented yet; line numbers refer to the code as it was at the time of the review.
+
+**Overall:** the code is in good shape. It type-checks and builds cleanly. The MCP/OAuth server is careful work: tokens are stored only as hashes, authorization codes are single-use and checked inside transactions, refresh tokens rotate, and every request re-checks the allowed-email list. Most of what needs work is in the web app.
+
+**Suggested order:** Phase 1, then the Algolia and rules work in Phase 2, then Phases 3 and 4 together, then whichever features from Phase 5 are wanted.
+
+## Phase 1 — Bug fixes (small, do first)
+
+1. **Links in markdown render with no text.** [`src/components/MarkdownView.tsx:18`](../src/components/MarkdownView.tsx) pulls `children` out of the props and never passes it on. Rendering a link gives `<a href="…" node="[object Object]" target="_blank"></a>`: the link is invisible, and an internal `node` prop also ends up in the HTML.
+2. **The form rejects decimal numbers.** The number inputs at [`src/pages/ItemForm.tsx:201`](../src/pages/ItemForm.tsx) have no `step`, so the browser only accepts whole numbers. In Chromium, `2.5` and `0.05` fail with "Please enter a valid value", and the form won't submit. That makes shank diameter, price per piece and weight impossible to enter. Separately, input that can't be parsed (e.g. `2,5`) is saved as `0` without a warning (`ItemForm.tsx:80`). Fix: add `step="any"` and `inputMode="decimal"`, and show an error instead of storing 0.
+3. **Saving the edit form can undo stock changes made through MCP.** [`src/pages/EditItemPage.tsx:108`](../src/pages/EditItemPage.tsx) writes every field, including `amount`. If `adjust_amount` ran while the form was open, saving puts the old number back. Fix: write only the fields that changed, plus clearing fields that don't apply to the item's kind.
+4. **Whether the user is signed in comes from a browser flag, not Firebase Auth** ([`src/App.tsx:162`](../src/App.tsx)). This causes three problems:
+   - If Firebase sign-in fails, the app still shows the user as signed in (`App.tsx:96-100`).
+   - When the Firebase session expires, the full app is shown but every request fails with permission errors.
+   - If Google's sign-in script loads after React has mounted, the sign-in button may never appear, because the effect doesn't run again (`App.tsx:80`). This was worked out from the code, not reproduced.
+
+   Fix: treat `onAuthStateChanged` as the only source of truth, sign in with `signInWithPopup(GoogleAuthProvider)`, and remove the Google sign-in script, the manual token parsing and the `revoke` call on sign-out. Also show a clear "this account isn't allowed" message.
+5. **Small ones:**
+   - `ItemPage` and `EditItemPage` store the item without its `id`, so `key={item.id}` is always `undefined`.
+   - [`src/pages/AddItemPage.tsx:7`](../src/pages/AddItemPage.tsx) defines its own copy of `INVENTORY_COLLECTION`.
+
+## Phase 2 — Security and privacy
+
+1. **Anyone can read the whole inventory through Algolia.** The search-only key ships in the page's JavaScript, and the Firestore rules don't apply to Algolia. Move the web app's search into the existing Cloud Function (it checks the Firebase ID token, much as MCP search already runs server-side), then restrict or rotate the public key, which [`functions/src/config.ts`](../functions/src/config.ts) uses too. The alternative is having the function issue short-lived Algolia keys.
+2. **Make the security rules safer:**
+   - Add `request.auth.token.email_verified == true`. This only matters if another sign-in method, such as email/password, is ever turned on, but it costs nothing.
+   - The list of allowed emails exists in three copies ([`firestore.rules`](../firestore.rules), [`storage.rules`](../storage.rules), [`functions/src/config.ts`](../functions/src/config.ts)). Replacing them with an `admin` flag on the user account (a Firebase custom claim, set once by a small script) would leave a single list.
+   - Block browser access to the `mcp*` collections; only the function needs them.
+3. **Allow only `http(s)` links in URL fields.** The web form's URL input accepts `javascript:` links; the MCP server already only accepts http(s). Low priority, since only the two allowed accounts can write.
+4. **Deploy rules and indexes from CI** instead of by hand, so what's deployed can't drift from the repo.
+
+## Phase 3 — Code structure
+
+- **Routing:** [`src/App.tsx`](../src/App.tsx) repeats the header wrapper six times. Replace it with one layout route using `<Outlet/>`, and add a 404 route.
+- **Shared code:**
+  - A `useItem(id)` hook for the item-loading code duplicated in `ItemPage` and `EditItemPage`.
+  - An `ItemList` component for the two identical lists in `HomePage`.
+- **Simplify [`src/firebase.ts`](../src/firebase.ts):** the "Firebase not configured" branches can never run, since the config is hardcoded. Removing them also removes the `db!` / `auth?` checks throughout the app.
+- **Bundle size:** everything ships as one 1.39 MB file (412 KB gzipped). Loading `/purefil` on demand would keep the chart library and the Pantone colour table out of the main page.
+- **Algolia client:** create it once instead of on every search ([`src/algolia.ts:28`](../src/algolia.ts)).
+
+## Phase 4 — CI and tests
+
+- **Check the functions on pull requests.** The PR workflow ([`.github/workflows/firebase-hosting-pull-request.yml`](../.github/workflows/firebase-hosting-pull-request.yml)) never builds `functions/`, so a type error there only shows up when deploying from `master`. Add the functions build, and `setup-node`, to the PR workflow.
+- **Add Vitest** for the pure logic: the schema helpers, [`functions/src/items.ts`](../functions/src/items.ts) (`toStoredFields`, `serializeItem`), the form's save logic once it's pulled out of the component, and the Purefil colour matching. Optionally, test the OAuth code against the Firestore emulator.
+
+## Phase 5 — Feature ideas
+
+- **Location / container** for each item. For an asset tracker this is the biggest gap: there's no way to record where something is. It pairs well with NFC tags on boxes: a box page that lists what's inside.
+- **Quick ±amount buttons** on the item page, using Firestore's atomic `increment()`, plus a low-stock threshold and a "running low" list.
+- **Delete or archive** items, and **"Duplicate as new"** for making screw variants.
+- **Browse by kind.** Right now the home page only offers search and the five last-viewed items.
+- **Shrink photos before upload.** Phone photos are several MB and thumbnails load at full size. Also delete images that are replaced or removed; they're currently left in storage.
+- **Printable QR labels** as an alternative to NFC, since Web NFC doesn't work on iPhones.
+- **Generalize `/purefil`** to any filament brand, and link to it from the app.
+- *(Bigger, optional)* Store blank numbers as "not set" instead of `0`. That removes the "is 0 a real value?" guessing noted at [`functions/src/items.ts:108`](../functions/src/items.ts), but it needs a data migration and an MCP change.
