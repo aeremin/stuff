@@ -15,7 +15,8 @@ export function MarkdownView({ markdown, className }: MarkdownViewProps) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          a: ({ href, children, ...props }) => {
+          // `node` is react-markdown's syntax-tree node; it must not reach the DOM.
+          a: ({ node: _node, href, children, ...props }) => {
             const external =
               href?.startsWith("http://") || href?.startsWith("https://");
             return (
@@ -25,7 +26,9 @@ export function MarkdownView({ markdown, className }: MarkdownViewProps) {
                 {...(external
                   ? { target: "_blank", rel: "noopener noreferrer" }
                   : {})}
-              />
+              >
+                {children}
+              </a>
             );
           },
         }}
