@@ -2,7 +2,7 @@
 
 A small web app for tracking personal belongings: screws, filament, tools, electronic parts, Lego sets and so on. It is a single-page **React + TypeScript** app built with **Vite**. All backend services are hosted (Firebase and Algolia), so there is no server to run locally. A remote [MCP server](#mcp-server) on the same Firebase project lets AI assistants search and edit the inventory.
 
-Live at <https://stuff-11062.web.app>.
+Live at <https://stuff.aerem.in>, a custom domain on Firebase Hosting. The same site is also served at <https://stuff-11062.web.app>, the address the [MCP server](#mcp-server) uses.
 
 ## Getting started
 
@@ -45,6 +45,8 @@ Photos are uploaded to Firebase Storage under `item-images/` and stored on the i
 ## Services and access
 
 - **Auth:** Firebase Auth with the Google provider, signed in through a popup. The app follows Firebase Auth's own session. Any Google account can sign in; for accounts the security rules do not allow, every page just fails to load its data.
+
+  Sign-in only works on domains listed under **Authorized domains** in the Firebase console (Authentication → Settings). Firebase adds `localhost`, `stuff-11062.firebaseapp.com` and `stuff-11062.web.app` on its own; the custom domain `stuff.aerem.in`, and any other domain the app is served from, has to be added by hand, or sign-in fails with `auth/unauthorized-domain`.
 - **Firestore and Storage:** [`firestore.rules`](firestore.rules) and [`storage.rules`](storage.rules) allow reads and writes only for two hardcoded email addresses.
 - **Search:** the home page queries the Algolia index **`global`** with a search-only key. Keeping that index in sync with Firestore happens outside this repository. The index is readable by anyone who has the key, which ships in the client bundle, regardless of the Firestore rules.
 
@@ -55,7 +57,7 @@ Firebase config and Algolia keys are hardcoded in [`src/firebase.ts`](src/fireba
 GitHub Actions deploys to Firebase:
 
 - every push to `master` deploys Cloud Functions (the [MCP server](#mcp-server)) and then the live site;
-- every pull request from this repository gets a Hosting preview channel (functions are not deployed from pull requests).
+- every pull request from this repository gets a Hosting preview channel (functions are not deployed from pull requests). Preview domains are not authorized for sign-in, so a preview only gets as far as the sign-in screen unless its domain is added to the authorized domains.
 
 Both use the service account in the `FIREBASE_SERVICE_ACCOUNT_STUFF_11062` secret. Deploying functions needs more than the Hosting roles the Firebase CLI grants it, typically Cloud Functions Admin, Cloud Run Admin, Service Account User, Artifact Registry Administrator and Service Usage Consumer; a failed run names any permission that is still missing.
 
