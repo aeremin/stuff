@@ -43,7 +43,7 @@ export function ItemPage() {
         }
 
         if (docSnap.exists()) {
-          setItem(docSnap.data() as InventoryItem);
+          setItem({ ...docSnap.data(), id: docSnap.id } as InventoryItem);
           // Track that the user opened the item detail page.
           void updateDoc(docRef, { lastViewed: serverTimestamp() }).catch(
             () => {

@@ -201,6 +201,11 @@ export function ItemForm({
                   <input
                     id={`add-item-${field.id}`}
                     type={getInputType(field)}
+                    // Without step="any" a number input only accepts whole
+                    // numbers and blocks the form on 2.5 or 0.12.
+                    step={field.type === "number" ? "any" : undefined}
+                    inputMode={field.type === "number" ? "decimal" : undefined}
+                    required={field.id === "name"}
                     className="add-item-page__input"
                     value={values[field.id] ?? ""}
                     onChange={(e) => setField(field.id, e.target.value)}

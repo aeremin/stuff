@@ -37,7 +37,7 @@ export function EditItemPage() {
         const docSnap = await getDoc(docRef);
         if (cancelled) return;
         if (docSnap.exists()) {
-          setItem(docSnap.data() as InventoryItem);
+          setItem({ ...docSnap.data(), id: docSnap.id } as InventoryItem);
           // Track that the user opened the edit page for this item.
           void updateDoc(docRef, { lastViewed: serverTimestamp() }).catch(
             () => {
@@ -105,8 +105,14 @@ export function EditItemPage() {
       }
       onSubmit={async (payload) => {
         const docRef = doc(db, INVENTORY_COLLECTION, id!);
+        // Only write what changed since the item was loaded, so a save does
+        // not undo changes made meanwhile elsewhere (another tab or person,
+        // or adjust_amount through the MCP server).
+        const changes = Object.fromEntries(
+          Object.entries(payload).filter(([key, value]) => item[key] !== value),
+        );
         await updateDoc(docRef, {
-          ...payload,
+          ...changes,
           lastEdited: serverTimestamp(),
         });
         navigate(`/item/${id}`);
