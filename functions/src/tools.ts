@@ -1,10 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { algoliasearch } from "algoliasearch";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { ALGOLIA, ITEMS_COLLECTION } from "./config.js";
+import { ITEMS_COLLECTION } from "./config.js";
 import { bucket, db } from "./firebase.js";
 import {
   availableFields,
@@ -18,6 +17,7 @@ import {
   toStoredFields,
   type FieldDescriptor,
 } from "./items.js";
+import { searchIndex } from "./search.js";
 
 const INSTRUCTIONS = `This server manages "Stuff", a personal inventory of physical things: screws, 3D-printer filament, tools, electronic parts, devices, Lego sets and more.
 
@@ -165,13 +165,9 @@ export function createMcpServer(): McpServer {
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async ({ query, limit }) => {
-      const client = algoliasearch(ALGOLIA.appId, ALGOLIA.searchKey);
-      const response = await client.searchSingleIndex<Record<string, unknown>>({
-        indexName: ALGOLIA.indexName,
-        searchParams: { query, hitsPerPage: limit, attributesToHighlight: [], attributesToSnippet: [] },
-      });
-      const results = response.hits.map((hit) => summarizeItem(hit.objectID, hit));
-      return json({ totalHits: response.nbHits ?? results.length, results });
+      const { totalHits, hits } = await searchIndex(query, limit);
+      const results = hits.map((hit) => summarizeItem(hit.objectID, hit));
+      return json({ totalHits, results });
     },
   );
 

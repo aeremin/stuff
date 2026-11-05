@@ -5,6 +5,7 @@
  * HTTP, stateless) and the OAuth 2.1 authorization server MCP clients use to
  * get a token. Firebase Hosting rewrites those paths to this function (see
  * firebase.json), so everything lives under https://stuff-11062.web.app.
+ * It also serves the web app's search (POST /api/search, see search.ts).
  */
 import cors from "cors";
 import express from "express";
@@ -19,6 +20,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { BASE_URL, MCP_URL } from "./config.js";
 import { db } from "./firebase.js";
 import { FirestoreOAuthProvider } from "./oauth.js";
+import { algoliaSearchKey, searchRouter } from "./search.js";
 import { createMcpServer } from "./tools.js";
 
 const provider = new FirestoreOAuthProvider(db);
@@ -94,6 +96,9 @@ app.all("/mcp", requireToken, (_req, res) => {
   });
 });
 
+// Same origin as the web app through Hosting, so no CORS.
+app.use("/api", searchRouter());
+
 app.use((_req, res) => {
   res.status(404).json({ error: "not_found" });
 });
@@ -104,6 +109,7 @@ export const mcp = onRequest(
     invoker: "public",
     maxInstances: 5,
     timeoutSeconds: 60,
+    secrets: [algoliaSearchKey],
   },
   app,
 );

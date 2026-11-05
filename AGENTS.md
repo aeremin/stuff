@@ -20,4 +20,5 @@ See `package.json` scripts and `README.md` for details. Key commands:
 - **No test framework**: There are no automated tests in this project. Type-checking via `tsc --noEmit` is the only static analysis available.
 - **Authentication**: Sign-in is Firebase Auth's Google popup (`signInWithPopup`, see `src/auth.ts`), so it needs a real Google account on one of the allowed emails, and the page's domain must be an authorized domain in Firebase Auth. In the Cloud Agent VM you can only check the app up to the sign-in screen.
 - **Firestore rules**: Write access is restricted to two specific email addresses. Full CRUD testing requires one of those accounts or modifying `firestore.rules`.
-- **No `.env` files**: Firebase config and Algolia keys are hardcoded in source (not secret — they are client-side keys).
+- **No `.env` files**: the Firebase config is hardcoded in source (not secret — it is a client-side key).
+- **Algolia**: the browser has no Algolia key. Search goes through `POST /api/search` on the Cloud Function (`functions/src/search.ts`), which uses the `ALGOLIA_SEARCH_KEY` secret. `npm run dev` proxies `/api` to the deployed function, so search only works with a signed-in allowed account.

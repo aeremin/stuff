@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { ItemList } from "../components/ItemList";
-import { searchItems } from "../algolia";
+import { searchItems } from "../search";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import type { InventoryItem } from "../common";
 

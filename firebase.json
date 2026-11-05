@@ -18,7 +18,7 @@
         "function": { "functionId": "mcp", "region": "europe-west6" }
       },
       {
-        "regex": "^/(oauth|\\.well-known)/.*$",
+        "regex": "^/(oauth|api|\\.well-known)/.*$",
         "function": { "functionId": "mcp", "region": "europe-west6" }
       },
       {
