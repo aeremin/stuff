@@ -6,35 +6,17 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth";
-import { collection, getDocs, limit, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { auth, db, INVENTORY_COLLECTION } from "./firebase";
+import { auth } from "./firebase";
 
 export type Session =
-  /** Firebase is still restoring the session, or checking access. */
+  /** Firebase is still restoring the session. */
   | { state: "loading" }
   | { state: "signedOut" }
-  /** Signed in, but the security rules do not let this account read items. */
-  | { state: "denied"; user: User }
   | { state: "signedIn"; user: User };
 
 /** Left behind by the old Google Identity Services sign-in. */
 const LEGACY_STORAGE_KEY = "googleUser";
-
-/**
- * Asks Firestore whether the signed-in user may read the inventory, so the
- * allowlist stays in the security rules only. Anything other than a clear
- * "permission denied" (being offline, for example) counts as allowed: the
- * pages then show their own errors.
- */
-async function hasInventoryAccess(): Promise<boolean> {
-  try {
-    await getDocs(query(collection(db, INVENTORY_COLLECTION), limit(1)));
-    return true;
-  } catch (err) {
-    return !(err instanceof FirebaseError && err.code === "permission-denied");
-  }
-}
 
 /** The current user, following Firebase Auth as the only source of truth. */
 export function useSession(): Session {
@@ -52,25 +34,9 @@ export function useSession(): Session {
       return;
     }
 
-    // Auth changes can overlap with a slow access check; only the latest
-    // one may set the session.
-    let latest = 0;
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      const check = ++latest;
-      if (!user) {
-        setSession({ state: "signedOut" });
-        return;
-      }
-      setSession({ state: "loading" });
-      const allowed = await hasInventoryAccess();
-      if (check === latest) {
-        setSession(allowed ? { state: "signedIn", user } : { state: "denied", user });
-      }
+    return onAuthStateChanged(auth, (user) => {
+      setSession(user ? { state: "signedIn", user } : { state: "signedOut" });
     });
-    return () => {
-      latest = -1;
-      unsubscribe();
-    };
   }, []);
 
   return session;

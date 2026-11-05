@@ -41,24 +41,6 @@ function LoginView() {
   );
 }
 
-function AccessDeniedView({ user }: { user: User }) {
-  return (
-    <div className="app app--unauthorized">
-      <p>
-        You are signed in as <strong>{user.email ?? user.displayName}</strong>,
-        which does not have access to this inventory.
-      </p>
-      <button
-        type="button"
-        className="logout-button sign-in-switch"
-        onClick={() => void signOut()}
-      >
-        Sign out and use another account
-      </button>
-    </div>
-  );
-}
-
 function AppHeader({ user }: { user: User }) {
   const name = user.displayName || user.email || "";
   return (
@@ -106,9 +88,6 @@ export function App() {
   }
   if (session.state === "signedOut") {
     return <LoginView />;
-  }
-  if (session.state === "denied") {
-    return <AccessDeniedView user={session.user} />;
   }
 
   const currentUser = session.user;

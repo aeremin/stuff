@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-Then open `http://localhost:5173`. Everything is behind Google sign-in; until you sign in you only see the sign-in button, and an account that is not allowed by the security rules gets a "no access" screen.
+Then open `http://localhost:5173`. Everything is behind Google sign-in; until you sign in you only see the sign-in button.
 
 | Script | What it does |
 | --- | --- |
@@ -44,7 +44,7 @@ Photos are uploaded to Firebase Storage under `item-images/` and stored on the i
 
 ## Services and access
 
-- **Auth:** Firebase Auth with the Google provider, signed in through a popup. The app follows Firebase Auth's own session; after sign-in it reads one item to find out whether the security rules let the account in, so the allowlist lives only in the rules.
+- **Auth:** Firebase Auth with the Google provider, signed in through a popup. The app follows Firebase Auth's own session. Any Google account can sign in; for accounts the security rules do not allow, every page just fails to load its data.
 - **Firestore and Storage:** [`firestore.rules`](firestore.rules) and [`storage.rules`](storage.rules) allow reads and writes only for two hardcoded email addresses.
 - **Search:** the home page queries the Algolia index **`global`** with a search-only key. Keeping that index in sync with Firestore happens outside this repository. The index is readable by anyone who has the key, which ships in the client bundle, regardless of the Firestore rules.
 
