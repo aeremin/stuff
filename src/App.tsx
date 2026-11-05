@@ -1,9 +1,11 @@
 import {
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithCredential,
   signOut,
+  type User,
 } from "firebase/auth";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import { auth } from "./firebase.ts";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
@@ -20,64 +22,40 @@ interface GoogleUser {
   picture?: string;
 }
 
-const STORAGE_KEY = "googleUser";
-
-interface GoogleJwtPayload {
-  name?: string;
-  email?: string;
-  picture?: string;
+function toGoogleUser(user: User | null): GoogleUser | null {
+  if (!user?.email) return null;
+  return {
+    name: user.displayName || user.email,
+    email: user.email,
+    picture: user.photoURL ?? undefined,
+  };
 }
 
-function parseGoogleUserFromCredential(
-  credential: string | undefined,
-): GoogleUser | null {
-  if (!credential) {
-    return null;
-  }
-
-  try {
-    const base64Payload = credential.split(".")[1];
-    if (!base64Payload) {
-      return null;
-    }
-
-    const normalized = base64Payload.replace(/-/g, "+").replace(/_/g, "/");
-    const decoded = atob(normalized);
-    const json = decodeURIComponent(
-      Array.from(decoded)
-        .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
-        .join(""),
-    );
-
-    const payload = JSON.parse(json) as GoogleJwtPayload;
-
-    if (!payload.email || !payload.name) {
-      return null;
-    }
-
-    return {
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-    };
-  } catch {
-    return null;
-  }
-}
-
-interface LoginViewProps {
-  onSignedIn: (user: GoogleUser) => void;
-}
-
-function LoginView({ onSignedIn }: LoginViewProps) {
+function LoginView() {
   const clientId =
     "281115569091-qnmc2t7vfrl83lmg9ou2i94bf501ku5t.apps.googleusercontent.com";
   const [buttonElement, setButtonElement] = useState<HTMLDivElement | null>(
     null,
   );
+  const [error, setError] = useState<string | null>(null);
+  const [googleLoaded, setGoogleLoaded] = useState(
+    () => Boolean(window.google?.accounts?.id),
+  );
+
+  // The Google Identity script loads async and can arrive after this view
+  // has mounted; wait for it instead of never rendering the button.
+  useEffect(() => {
+    if (googleLoaded) return;
+    const script = document.getElementById("google-identity");
+    const onLoad = () => setGoogleLoaded(Boolean(window.google?.accounts?.id));
+    script?.addEventListener("load", onLoad);
+    // It may have finished loading between the first render and now.
+    onLoad();
+    return () => script?.removeEventListener("load", onLoad);
+  }, [googleLoaded]);
 
   useEffect(() => {
-    if (!buttonElement || !window.google?.accounts?.id) {
+    if (!buttonElement || !googleLoaded || !window.google?.accounts?.id) {
       return;
     }
 
@@ -85,19 +63,19 @@ function LoginView({ onSignedIn }: LoginViewProps) {
       client_id: clientId,
       callback: async (response: unknown) => {
         const idToken = (response as { credential?: string }).credential;
-        const user = parseGoogleUserFromCredential(idToken);
-
-        if (user && idToken) {
-          try {
-            if (auth) {
-              const credential = GoogleAuthProvider.credential(idToken);
-              await signInWithCredential(auth, credential);
-            }
-          } catch (error) {
-            console.error("failed to sign in", error);
-          }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-          onSignedIn(user);
+        if (!idToken || !auth) return;
+        setError(null);
+        try {
+          // The app switches to the signed-in view through onAuthStateChanged.
+          await signInWithCredential(
+            auth,
+            GoogleAuthProvider.credential(idToken),
+          );
+        } catch (err) {
+          console.error("failed to sign in", err);
+          setError(
+            err instanceof Error ? err.message : "Failed to sign in.",
+          );
         }
       },
     });
@@ -109,11 +87,12 @@ function LoginView({ onSignedIn }: LoginViewProps) {
       shape: "pill",
       width: 260,
     });
-  }, [buttonElement, clientId, onSignedIn]);
+  }, [buttonElement, clientId, googleLoaded]);
 
   return (
     <div className="app app--unauthorized">
       <div ref={setButtonElement} className="google-button-container" />
+      {error && <p className="home__status home__status--error">{error}</p>}
     </div>
   );
 }
@@ -158,20 +137,23 @@ function AppHeader({ user, onSignOut }: AppHeaderProps) {
   );
 }
 
-export function App() {
-  const [user, setUser] = useState<GoogleUser | null>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) {
-        return null;
-      }
-      return JSON.parse(saved) as GoogleUser;
-    } catch {
-      return null;
-    }
-  });
+// Earlier versions kept the signed-in user here, separately from the
+// Firebase session; it is no longer read.
+const LEGACY_STORAGE_KEY = "googleUser";
 
-  const isAuthorized = useMemo(() => Boolean(user?.email), [user]);
+export function App() {
+  // undefined until Firebase Auth has restored the persisted session.
+  const [user, setUser] = useState<GoogleUser | null | undefined>(
+    auth ? undefined : null,
+  );
+
+  useEffect(() => {
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    if (!auth) return;
+    return onAuthStateChanged(auth, (firebaseUser) =>
+      setUser(toGoogleUser(firebaseUser)),
+    );
+  }, []);
 
   const handleSignOut = async () => {
     if (user?.email && window.google?.accounts?.id) {
@@ -184,18 +166,20 @@ export function App() {
       if (auth) {
         await signOut(auth);
       }
-    } catch {
-      // ignore if Firebase Auth not used
+    } catch (error) {
+      console.error("failed to sign out", error);
     }
-    localStorage.removeItem(STORAGE_KEY);
-    setUser(null);
   };
 
-  if (!isAuthorized) {
-    return <LoginView onSignedIn={setUser} />;
+  if (user === undefined) {
+    return <div className="app app--unauthorized" />;
   }
 
-  const currentUser = user!;
+  if (!user) {
+    return <LoginView />;
+  }
+
+  const currentUser = user;
 
   return (
     <Routes>
