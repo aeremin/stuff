@@ -6,7 +6,11 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function isAdmin(auth) {
-      return auth.token.email == "a.eremin.msu@gmail.com" || auth.token.email == "j.lotova@gmail.com"
+      // email_verified only matters if a sign-in method other than Google
+      // (which always verifies) is ever turned on.
+      return auth != null
+        && auth.token.email_verified == true
+        && (auth.token.email == "a.eremin.msu@gmail.com" || auth.token.email == "j.lotova@gmail.com")
     }
 
     match /{allPaths=**} {
