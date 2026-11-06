@@ -7,8 +7,8 @@
  * the user. For that, /authorize sends the browser to the web app's /connect
  * page, where the user is already signed in with Google through Firebase Auth.
  * That page posts the user's Firebase ID token back to /oauth/requests/:id/...,
- * which checks it against the same allowlist as the Firestore rules and
- * issues the authorization code.
+ * which checks it for the same admin claim as the Firestore rules (see
+ * access.ts) and issues the authorization code.
  *
  * Codes and tokens are random strings; Firestore only stores their SHA-256.
  */
@@ -38,10 +38,9 @@ import {
   InvalidTargetError,
   InvalidTokenError,
 } from "@modelcontextprotocol/sdk/server/auth/errors.js";
-import { adminAuth } from "./firebase.js";
+import { checkIdToken, userHasAccess } from "./access.js";
 import {
   ACCESS_TOKEN_TTL_SECONDS,
-  ALLOWED_EMAILS,
   AUTH_CODE_TTL_SECONDS,
   AUTH_REQUEST_TTL_SECONDS,
   CONSENT_PAGE_URL,
@@ -109,10 +108,6 @@ function checkResource(resource: URL | undefined): void {
       `This server only issues tokens for ${MCP_URL.href}`,
     );
   }
-}
-
-export function isAllowedEmail(email: string | undefined | null): boolean {
-  return Boolean(email && ALLOWED_EMAILS.has(email.toLowerCase()));
 }
 
 class FirestoreClientsStore implements OAuthRegisteredClientsStore {
@@ -246,7 +241,7 @@ export class FirestoreOAuthProvider implements OAuthServerProvider {
       ) {
         throw new InvalidGrantError("Invalid or expired refresh token");
       }
-      if (!isAllowedEmail(token.email)) {
+      if (!(await userHasAccess(token.uid))) {
         tx.delete(ref);
         throw new InvalidGrantError("This account no longer has access");
       }
@@ -295,7 +290,7 @@ export class FirestoreOAuthProvider implements OAuthServerProvider {
     if (!doc || doc.kind !== "access" || isExpired(doc.expiresAt)) {
       throw new InvalidTokenError("Invalid or expired access token");
     }
-    if (!isAllowedEmail(doc.email)) {
+    if (!(await userHasAccess(doc.uid))) {
       throw new InvalidTokenError("This account no longer has access");
     }
     return {
@@ -378,23 +373,11 @@ export class FirestoreOAuthProvider implements OAuthServerProvider {
       if (typeof body.idToken !== "string") {
         return void res.status(400).json({ error: "Missing idToken" });
       }
-      let uid: string;
-      let email: string | undefined;
-      try {
-        const decoded = await adminAuth.verifyIdToken(body.idToken);
-        uid = decoded.uid;
-        email = decoded.email_verified ? decoded.email : undefined;
-      } catch (err) {
-        logger.warn("Rejected ID token on MCP consent", err);
-        return void res
-          .status(401)
-          .json({ error: "Your sign-in has expired. Sign out, sign in again and retry." });
+      const access = await checkIdToken(body.idToken, "MCP consent");
+      if (!access.ok) {
+        return void res.status(access.status).json({ error: access.error });
       }
-      if (!email || !isAllowedEmail(email)) {
-        return void res
-          .status(403)
-          .json({ error: `${email ?? "This account"} is not allowed to access this inventory.` });
-      }
+      const { uid, email } = access;
 
       const code = randomSecret("stuff_ac");
       const codeDoc: AuthCodeDoc = {
