@@ -35,9 +35,12 @@
       }
     }
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "bucket": "stuff-11062.firebasestorage.app",
+      "rules": "storage.rules"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
