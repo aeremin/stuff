@@ -47,8 +47,8 @@ Photos are uploaded to Firebase Storage under `item-images/` and stored on the i
 - **Auth:** Firebase Auth with the Google provider, signed in through a popup. The app follows Firebase Auth's own session. Any Google account can sign in; for accounts the security rules do not allow, every page just fails to load its data.
 
   Sign-in only works on domains listed under **Authorized domains** in the Firebase console (Authentication → Settings). Firebase adds `localhost`, `stuff-11062.firebaseapp.com` and `stuff-11062.web.app` on its own; the custom domain `stuff.aerem.in`, and any other domain the app is served from, has to be added by hand, or sign-in fails with `auth/unauthorized-domain`.
-- **Firestore and Storage:** [`firestore.rules`](firestore.rules) and [`storage.rules`](storage.rules) allow reads and writes only for two hardcoded email addresses.
-- **Search:** the Algolia index **`global`** holds a copy of every item, and anyone with a key for it can read it all, whatever the Firestore rules say. So the browser never gets a key. The home page sends its query to `POST /api/search` on the Cloud Function ([`functions/src/search.ts`](functions/src/search.ts)) along with the user's Firebase ID token. The function checks the token against the allowed emails and then queries Algolia. MCP search uses the same code. The search-only key is the Secret Manager secret **`ALGOLIA_SEARCH_KEY`**. Keeping the index in sync with Firestore happens outside this repository, with its own key.
+- **Who has access:** Firebase Auth users with the custom claim `admin: true` (and a verified email). [`firestore.rules`](firestore.rules), [`storage.rules`](storage.rules) and the Cloud Function ([`functions/src/access.ts`](functions/src/access.ts)) all check that claim, so there is no list of emails to keep in sync. The claim is set by hand with the Admin SDK, e.g. `getAuth().setCustomUserClaims(uid, { admin: true })`; the user then signs out and back in, since ID tokens only pick up new claims when they are refreshed. Removing the claim cuts off the web app within an hour (when the ID token expires) and MCP clients within a minute.
+- **Search:** the Algolia index **`global`** holds a copy of every item, and anyone with a key for it can read it all, whatever the Firestore rules say. So the browser never gets a key. The home page sends its query to `POST /api/search` on the Cloud Function ([`functions/src/search.ts`](functions/src/search.ts)) along with the user's Firebase ID token. The function checks the token for the admin claim and then queries Algolia. MCP search uses the same code. The search-only key is the Secret Manager secret **`ALGOLIA_SEARCH_KEY`**. Keeping the index in sync with Firestore happens outside this repository, with its own key.
 
 The Firebase config is hardcoded in [`src/firebase.ts`](src/firebase.ts); it's a client-side key, not a secret. There are no `.env` files.
 
@@ -85,7 +85,7 @@ firebase deploy --only firestore,storage --project stuff-11062
 claude mcp add --transport http stuff https://stuff-11062.web.app/mcp
 ```
 
-The client opens a browser window on the app's `/connect` page; approve it while signed in with one of the allowed Google accounts.
+The client opens a browser window on the app's `/connect` page; approve it while signed in with a Google account that has access.
 
 ### Tools
 
@@ -108,7 +108,7 @@ Everything runs in the `stuff-11062` project; the code is in [`functions/`](func
 
 - One 2nd gen Cloud Function, **`mcp`** (`europe-west6`, next to Firestore), is an Express app serving the MCP endpoint and an OAuth 2.1 authorization server built on the MCP SDK's auth router: dynamic client registration, PKCE, refresh token rotation and revocation.
 - Firebase Hosting rewrites `/mcp`, `/authorize`, `/token`, `/register`, `/revoke`, `/oauth/**`, `/api/**` (the web app's search) and `/.well-known/**` to that function (see [`firebase.json`](firebase.json)), so the server shares the app's origin.
-- Signing in reuses the app itself. `/authorize` redirects to `/connect`, where the already signed-in user approves; the page sends their Firebase ID token to the function, which checks it against the same two email addresses as the security rules (`ALLOWED_EMAILS` in [`functions/src/config.ts`](functions/src/config.ts); keep both lists in sync). The Admin SDK bypasses the rules, so this check is what protects the data. Access tokens are re-checked against the list on every request.
+- Signing in reuses the app itself. `/authorize` redirects to `/connect`, where the already signed-in user approves; the page sends their Firebase ID token to the function, which checks it for the same admin claim as the security rules ([`functions/src/access.ts`](functions/src/access.ts)). The Admin SDK bypasses the rules, so this check is what protects the data. On every request, and on every refresh, the token's user is looked up again in Firebase Auth (cached for a minute per instance): a disabled account, or one without the claim, is turned away.
 - OAuth state is kept in Firestore: `mcpClients`, `mcpAuthRequests`, `mcpAuthCodes` and `mcpTokens`. Codes and tokens are random strings stored only as SHA-256 hashes; access tokens last an hour, refresh tokens 90 days. TTL policies in [`firestore.indexes.json`](firestore.indexes.json) remove expired records.
 - The function needs the Blaze plan, like any Cloud Function.
 

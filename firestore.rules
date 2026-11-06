@@ -3,11 +3,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin(auth) {
-      // email_verified only matters if a sign-in method other than Google
-      // (which always verifies) is ever turned on.
+      // `admin` is a custom claim, set by hand on the accounts that may use
+      // the inventory. The Cloud Function checks the same claim
+      // (functions/src/access.ts). email_verified only matters if a sign-in
+      // method other than Google (which always verifies) is ever turned on.
       return auth != null
         && auth.token.email_verified == true
-        && (auth.token.email == "a.eremin.msu@gmail.com" || auth.token.email == "j.lotova@gmail.com")
+        && auth.token.admin == true
     }
 
     match /{document=**} {

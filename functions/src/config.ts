@@ -18,16 +18,6 @@ export function itemUrl(id: string): string {
   return new URL(`/item/${encodeURIComponent(id)}`, BASE_URL).toString();
 }
 
-/**
- * Accounts that may connect. Keep in sync with firestore.rules and
- * storage.rules: the function uses the Admin SDK, which bypasses those rules,
- * so this list is what actually guards the data.
- */
-export const ALLOWED_EMAILS = new Set([
-  "a.eremin.msu@gmail.com",
-  "j.lotova@gmail.com",
-]);
-
 export const ITEMS_COLLECTION = "items";
 
 export const OAUTH_COLLECTIONS = {

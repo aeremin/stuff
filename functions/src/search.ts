@@ -12,9 +12,8 @@ import { algoliasearch, type Algoliasearch } from "algoliasearch";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
 import { z } from "zod";
+import { checkIdToken } from "./access.js";
 import { ALGOLIA } from "./config.js";
-import { adminAuth } from "./firebase.js";
-import { isAllowedEmail } from "./oauth.js";
 
 /** Search-only key for the index, set with `firebase functions:secrets:set`. */
 export const algoliaSearchKey = defineSecret("ALGOLIA_SEARCH_KEY");
@@ -61,8 +60,8 @@ const searchRequest = z.object({
 
 /**
  * Search for the web app, mounted at /api. The caller sends their Firebase ID
- * token as a bearer token and must be one of the allowed accounts, as for the
- * Firestore rules.
+ * token as a bearer token and must have the admin claim, as for the Firestore
+ * rules (see access.ts).
  */
 export function searchRouter(): Router {
   const router = express.Router();
@@ -75,20 +74,9 @@ export function searchRouter(): Router {
     if (!match) {
       return void res.status(401).json({ error: "Sign in to search." });
     }
-    let email: string | undefined;
-    try {
-      const decoded = await adminAuth.verifyIdToken(match[1]);
-      email = decoded.email_verified ? decoded.email : undefined;
-    } catch (err) {
-      logger.warn("Rejected ID token on search", err);
-      return void res
-        .status(401)
-        .json({ error: "Your sign-in has expired. Sign out, sign in again and retry." });
-    }
-    if (!email || !isAllowedEmail(email)) {
-      return void res
-        .status(403)
-        .json({ error: `${email ?? "This account"} is not allowed to access this inventory.` });
+    const access = await checkIdToken(match[1], "search");
+    if (!access.ok) {
+      return void res.status(access.status).json({ error: access.error });
     }
 
     const parsed = searchRequest.safeParse(req.body);
