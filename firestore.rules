@@ -12,7 +12,11 @@ service cloud.firestore {
         && auth.token.admin == true
     }
 
-    match /{document=**} {
+    // The web app only uses `items`. Every other collection, including the
+    // MCP server's OAuth state (mcpClients, mcpAuthRequests, mcpAuthCodes,
+    // mcpTokens), is closed to browsers; the function reaches it through the
+    // Admin SDK, which bypasses these rules.
+    match /items/{document=**} {
       allow read, write: if isAdmin(request.auth)
     }
   }

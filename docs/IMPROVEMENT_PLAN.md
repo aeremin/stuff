@@ -23,7 +23,7 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
 2. **Make the security rules safer:**
    - ✅ *Done: both rules files require `email_verified`; the function already did.* Add `request.auth.token.email_verified == true`. This only matters if another sign-in method, such as email/password, is ever turned on, but it costs nothing.
    - ✅ *Done: the rules and the function ([`functions/src/access.ts`](../functions/src/access.ts)) check an `admin` custom claim instead of email addresses. There is no script: the claim is set by hand on the two accounts. MCP tokens are re-checked against the user's current claims in Firebase Auth (cached for a minute).* The list of allowed emails exists in three copies ([`firestore.rules`](../firestore.rules), [`storage.rules`](../storage.rules), [`functions/src/config.ts`](../functions/src/config.ts)). Replacing them with an `admin` flag on the user account (a Firebase custom claim, set once by a small script) would leave a single list.
-   - Block browser access to the `mcp*` collections; only the function needs them.
+   - ✅ *Done: [`firestore.rules`](../firestore.rules) only open `items`, the one collection the web app uses; everything else is closed to browsers.* Block browser access to the `mcp*` collections; only the function needs them.
 3. **Allow only `http(s)` links in URL fields.** The web form's URL input accepts `javascript:` links; the MCP server already only accepts http(s). Low priority, since only the two allowed accounts can write.
 4. **Deploy rules and indexes from CI** instead of by hand, so what's deployed can't drift from the repo.
 
