@@ -25,7 +25,7 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
    - The list of allowed emails exists in three copies ([`firestore.rules`](../firestore.rules), [`storage.rules`](../storage.rules), [`functions/src/config.ts`](../functions/src/config.ts)). Replacing them with an `admin` flag on the user account (a Firebase custom claim, set once by a small script) would leave a single list.
    - Block browser access to the `mcp*` collections; only the function needs them.
 3. **Allow only `http(s)` links in URL fields.** The web form's URL input accepts `javascript:` links; the MCP server already only accepts http(s). Low priority, since only the two allowed accounts can write.
-4. **Deploy rules and indexes from CI** instead of by hand, so what's deployed can't drift from the repo.
+4. ✅ *Done: every push to `master` deploys the Firestore and Storage rules and the Firestore indexes before functions and Hosting, and pull requests compile them with `--dry-run`. The deploy runs without `--force`, so indexes that exist only in the project are reported, not deleted. The service account needs Firebase Rules Admin and Cloud Datastore Index Admin on top of its current roles.* **Deploy rules and indexes from CI** instead of by hand, so what's deployed can't drift from the repo.
 
 ## Phase 3 — Code structure
 

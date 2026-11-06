@@ -23,6 +23,11 @@ jobs:
       - uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STUFF_11062 }}
+      # Security rules and indexes go before the code that relies on them.
+      # Unchanged rules are skipped. No --force here: indexes and field
+      # overrides that exist in the project but not in firestore.indexes.json
+      # are only reported, never deleted.
+      - run: npx --yes firebase-tools@15.12.0 deploy --only firestore,storage --project stuff-11062 --non-interactive
       # Builds functions/ through the predeploy hook in firebase.json.
       # Unchanged functions are skipped; --force lets the CLI set up the
       # Artifact Registry cleanup policy instead of prompting for it.

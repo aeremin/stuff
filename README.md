@@ -56,10 +56,12 @@ The Firebase config is hardcoded in [`src/firebase.ts`](src/firebase.ts); it's a
 
 GitHub Actions deploys to Firebase:
 
-- every push to `master` deploys Cloud Functions (the [MCP server](#mcp-server)) and then the live site;
-- every pull request from this repository gets a Hosting preview channel (functions are not deployed from pull requests). Preview domains are not authorized for sign-in, so a preview only gets as far as the sign-in screen unless its domain is added to the authorized domains.
+- every push to `master` deploys the Firestore and Storage security rules and the Firestore indexes (with the TTL policies), then Cloud Functions (the [MCP server](#mcp-server)), then the live site;
+- every pull request from this repository compiles the rules and checks the indexes file without deploying them (`--dry-run`), and gets a Hosting preview channel (functions, rules and indexes are not deployed from pull requests). Preview domains are not authorized for sign-in, so a preview only gets as far as the sign-in screen unless its domain is added to the authorized domains.
 
-Both use the service account in the `FIREBASE_SERVICE_ACCOUNT_STUFF_11062` secret. Deploying functions needs more than the Hosting roles the Firebase CLI grants it, typically Cloud Functions Admin, Cloud Run Admin, Service Account User, Artifact Registry Administrator, Service Usage Consumer and Secret Manager Admin (the deploy grants the function access to its secret); a failed run names any permission that is still missing.
+So [`firestore.rules`](firestore.rules), [`storage.rules`](storage.rules) and [`firestore.indexes.json`](firestore.indexes.json) on `master` are what's deployed; don't change rules or indexes in the Firebase console, as the next deploy overwrites them. The one exception is deletion: an index or field override that exists in the project but not in the file is left in place (the deploy log reports it). To remove one, delete it in the console, or deploy once by hand with `--force`.
+
+Both workflows use the service account in the `FIREBASE_SERVICE_ACCOUNT_STUFF_11062` secret. Deploying needs more than the Hosting roles the Firebase CLI grants it: for functions, typically Cloud Functions Admin, Cloud Run Admin, Service Account User, Artifact Registry Administrator, Service Usage Consumer and Secret Manager Admin (the deploy grants the function access to its secret); for rules and indexes, Firebase Rules Admin and Cloud Datastore Index Admin. A failed run names any permission that is still missing.
 
 The function's secret is set by hand, once and again whenever the key is rotated. A new value takes effect on the next functions deploy:
 
@@ -69,10 +71,10 @@ firebase functions:secrets:set ALGOLIA_SEARCH_KEY --project stuff-11062
 
 Use an Algolia key with only the `search` ACL, restricted to the `global` index.
 
-Rule and index changes have to be deployed by hand:
+Rules and indexes can still be deployed by hand, for example to try a change before merging it:
 
 ```bash
-firebase deploy --only firestore,storage
+firebase deploy --only firestore,storage --project stuff-11062
 ```
 
 ## MCP server
