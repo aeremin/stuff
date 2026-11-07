@@ -1,16 +1,15 @@
 .item-page {
   width: 100%;
   max-width: 720px;
-  padding: 1.5rem;
 }
 
 .item-page__header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .item-page__back {
-  font-size: 0.95rem;
-  color: #93c5fd;
+  font-size: 0.925rem;
+  color: var(--link);
   text-decoration: none;
 }
 
@@ -19,18 +18,24 @@
 }
 
 .item-page__card {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1.75rem 2rem;
-  box-shadow:
-    0 24px 60px rgba(15, 23, 42, 0.85),
-    0 0 0 1px rgba(148, 163, 184, 0.15);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 480px) {
+  .item-page__card {
+    padding: 1.25rem;
+  }
 }
 
 .item-page__title {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
   margin: 0 0 1.25rem;
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 .item-page__actions {
@@ -46,39 +51,30 @@
   text-decoration: none;
 }
 
+/* The page's buttons (Edit, Write to NFC, Save, Allow), despite the name. */
 .item-page__nfc-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
-  border: none;
-  font-size: 0.9rem;
-  font-weight: 500;
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.925rem;
+  font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
-  background: linear-gradient(135deg, #38bdf8, #4f46e5);
-  color: #f9fafb;
-  box-shadow:
-    0 8px 20px rgba(56, 189, 248, 0.4),
-    0 0 0 1px rgba(15, 23, 42, 0.6);
+  background: var(--accent);
+  color: var(--accent-fg);
   transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    opacity 0.12s ease;
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .item-page__nfc-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow:
-    0 12px 30px rgba(56, 189, 248, 0.55),
-    0 0 0 1px rgba(15, 23, 42, 0.7);
-}
-
-.item-page__nfc-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow:
-    0 4px 12px rgba(15, 23, 42, 0.9),
-    0 0 0 1px rgba(15, 23, 42, 0.7);
+  background: var(--accent-hover);
+  text-decoration: none;
 }
 
 .item-page__nfc-button:disabled {
@@ -86,19 +82,19 @@
   cursor: not-allowed;
 }
 
-/* Pushed to the far end of the actions row, away from Edit. */
+/* Pushed to the far end of the actions row, away from Edit, and quieter
+   than it until hovered. */
 .item-page__delete-button {
   margin-left: auto;
-  background: linear-gradient(135deg, #f87171, #dc2626);
-  box-shadow:
-    0 8px 20px rgba(220, 38, 38, 0.35),
-    0 0 0 1px rgba(15, 23, 42, 0.6);
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--danger-text);
 }
 
 .item-page__delete-button:hover:not(:disabled) {
-  box-shadow:
-    0 12px 30px rgba(220, 38, 38, 0.5),
-    0 0 0 1px rgba(15, 23, 42, 0.7);
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--accent-fg);
 }
 
 .item-page__delete-error {
@@ -108,15 +104,14 @@
 
 .item-page__nfc-helper,
 .item-page__nfc-status {
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 .item-page__fields {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
   margin: 0;
 }
 
@@ -125,8 +120,8 @@
   grid-template-columns: 1fr 2fr;
   gap: 1rem;
   align-items: baseline;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .item-page__field--markdown {
@@ -140,23 +135,23 @@
 .item-page__field-key {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .item-page__field-value {
   margin: 0;
   font-size: 0.95rem;
-  color: #e5e7eb;
+  color: var(--text);
   word-break: break-word;
 }
 
 .item-page__markdown {
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 .item-page__field-link {
-  color: #93c5fd;
+  color: var(--link);
   text-decoration: none;
 }
 
@@ -169,15 +164,12 @@
   line-height: 0;
   border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.25);
-  transition:
-    box-shadow 0.12s ease,
-    transform 0.12s ease;
+  box-shadow: 0 0 0 1px var(--border);
+  transition: box-shadow 0.12s ease;
 }
 
 .item-page__field-image-link:hover {
-  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
-  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .item-page__field-image-thumb {
@@ -194,66 +186,13 @@
 .item-page__not-found {
   padding: 2rem;
   text-align: center;
-  color: #cbd5f5;
+  color: var(--text-muted);
 }
 
 .item-page__error {
-  color: #fca5a5;
+  color: var(--danger-text);
 }
 
 .item-page__not-found {
-  color: #fbbf24;
-}
-
-@media (prefers-color-scheme: light) {
-  .item-page__card {
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow:
-      0 24px 60px rgba(148, 163, 184, 0.5),
-      0 0 0 1px rgba(148, 163, 184, 0.2);
-  }
-
-  .item-page__title {
-    color: #1e293b;
-  }
-
-  .item-page__nfc-button {
-    box-shadow:
-      0 8px 20px rgba(129, 140, 248, 0.4),
-      0 0 0 1px rgba(148, 163, 184, 0.3);
-  }
-
-  .item-page__delete-button {
-    box-shadow:
-      0 8px 20px rgba(248, 113, 113, 0.4),
-      0 0 0 1px rgba(148, 163, 184, 0.3);
-  }
-
-  .item-page__back {
-    color: #2563eb;
-  }
-
-  .item-page__field-key {
-    color: #64748b;
-  }
-
-  .item-page__field-value {
-    color: #1e293b;
-  }
-
-  .item-page__markdown {
-    color: #1e293b;
-  }
-
-  .item-page__field-link {
-    color: #2563eb;
-  }
-
-  .item-page__field-image-link {
-    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.35);
-  }
-
-  .item-page__field-image-link:hover {
-    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.45);
-  }
+  color: var(--warning-text);
 }

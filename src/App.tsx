@@ -1,7 +1,8 @@
 import type { User } from "firebase/auth";
 import { lazy, Suspense, useState } from "react";
-import { Outlet, Route, Routes } from "react-router-dom";
+import { Link, Outlet, Route, Routes } from "react-router-dom";
 import { signIn, signOut, useSession } from "./auth.ts";
+import { homeLocation } from "./components/BackToHomeLink.tsx";
 import { AddItemPage } from "./pages/AddItemPage.tsx";
 import { ConnectPage } from "./pages/ConnectPage.tsx";
 import { EditItemPage } from "./pages/EditItemPage.tsx";
@@ -33,6 +34,8 @@ function LoginView() {
 
   return (
     <div className="app app--unauthorized">
+      <h1 className="sign-in__title">Stuff</h1>
+      <p className="sign-in__subtitle">Sign in to see your inventory.</p>
       <button
         type="button"
         className="sign-in-button"
@@ -48,39 +51,42 @@ function LoginView() {
 
 function AppHeader({ user }: { user: User }) {
   const name = user.displayName || user.email || "";
+  // Shown on hover, since the bar has room only for the name.
+  const fullName =
+    user.email && user.email !== name ? `${name} (${user.email})` : name;
   return (
     <header className="app-header">
-      <div className="user-info">
-        {user.photoURL ? (
-          <img
-            src={user.photoURL}
-            alt={name}
-            className="user-avatar"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="user-avatar user-avatar--fallback">
-            {name
-              .split(" ")
-              .map((part) => part.charAt(0))
-              .join("")
-              .toUpperCase()}
-          </div>
-        )}
-        <div className="user-text">
+      <div className="app-header__inner">
+        <Link to={homeLocation()} className="app-header__brand">
+          Stuff
+        </Link>
+        <div className="user-info" title={fullName}>
           <span className="user-name">{name}</span>
-          {user.email && user.email !== name && (
-            <span className="user-email">{user.email}</span>
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt=""
+              className="user-avatar"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="user-avatar user-avatar--fallback" aria-hidden="true">
+              {name
+                .split(" ")
+                .map((part) => part.charAt(0))
+                .join("")
+                .toUpperCase()}
+            </div>
           )}
+          <button
+            type="button"
+            className="logout-button"
+            onClick={() => void signOut()}
+          >
+            Sign out
+          </button>
         </div>
       </div>
-      <button
-        type="button"
-        className="logout-button"
-        onClick={() => void signOut()}
-      >
-        Sign out
-      </button>
     </header>
   );
 }
