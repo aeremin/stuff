@@ -5,6 +5,7 @@ export const ItemKind = {
   ElectronicPart: "Electronic part",
   Device: "Device",
   Lego: "Lego",
+  Climbing: "Climbing",
   Other: "Other",
 } as const;
 
@@ -120,5 +121,36 @@ export const availableFields: FieldDescriptor[] = [
     humanReadableName: "Set number",
     type: "number",
     onlyForKinds: ["Lego"],
+  },
+  {
+    id: "climbing_type",
+    humanReadableName: "Gear type",
+    type: "select",
+    allowedValues: [
+      "Quickdraw",
+      "Locking carabiner",
+      "Non-locking carabiner",
+      "Sling",
+      "Personal anchor",
+      "Rope",
+      "Belay device",
+      "Harness",
+      "Helmet",
+      "Protection",
+      "Racking",
+    ],
+    onlyForKinds: [ItemKind.Climbing],
+  },
+  {
+    id: "length",
+    humanReadableName: "Length, cm",
+    type: "number",
+    onlyForKinds: [ItemKind.Climbing],
+  },
+  {
+    id: "manufacture_year",
+    humanReadableName: "Manufacture year",
+    type: "number",
+    onlyForKinds: [ItemKind.Climbing],
   },
 ];

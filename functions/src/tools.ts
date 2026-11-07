@@ -19,7 +19,7 @@ import {
 } from "./items.js";
 import { searchIndex } from "./search.js";
 
-const INSTRUCTIONS = `This server manages "Stuff", a personal inventory of physical things: screws, 3D-printer filament, tools, electronic parts, devices, Lego sets and more.
+const INSTRUCTIONS = `This server manages "Stuff", a personal inventory of physical things: screws, 3D-printer filament, tools, electronic parts, devices, Lego sets, climbing gear and more.
 
 Each item has a name, a kind and kind-specific fields (call describe_schema for the full list). To find an item, use search_items for free-text queries or list_items to browse by kind or recency, then get_item for every field. Use adjust_amount when stock is used up or restocked, so concurrent changes are not lost. Every result includes the item's URL in the web app.`;
 
