@@ -1,8 +1,9 @@
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { availableFields } from "../schema";
 import { db, INVENTORY_COLLECTION } from "../firebase";
 import { ItemForm } from "./ItemForm";
+import { BackToHomeLink } from "../components/BackToHomeLink";
 
 const initialValues = Object.fromEntries(
   availableFields.map((f) => [f.id, ""]),
@@ -17,9 +18,7 @@ export function AddItemPage() {
       title="Add new item"
       submitLabel="Save item"
       backLink={
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
+        <BackToHomeLink />
       }
       onSubmit={async (payload) => {
         const docRef = await addDoc(

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { auth } from "../firebase";
 import "./ItemPage.css";
 import "./ConnectPage.css";
+import { BackToHomeLink } from "../components/BackToHomeLink";
 
 // Consent step of the MCP server's OAuth flow (functions/src/oauth.ts):
 // /authorize redirects here with ?request=<id>, the signed-in user approves
@@ -102,9 +103,7 @@ export function ConnectPage() {
   return (
     <div className="item-page connect-page">
       <div className="item-page__header">
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
+        <BackToHomeLink />
       </div>
       <div className="item-page__card">
         <h1 className="item-page__title">Connect an MCP client</h1>

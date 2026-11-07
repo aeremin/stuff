@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import {
   collection,
   getDocs,
@@ -9,6 +9,7 @@ import {
   where,
   type QuerySnapshot,
 } from "firebase/firestore";
+import { rememberHomeSearch } from "../components/BackToHomeLink";
 import { ItemList } from "../components/ItemList";
 import { searchItems } from "../search";
 import { db, INVENTORY_COLLECTION } from "../firebase";
@@ -29,6 +30,11 @@ export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const kindParam = searchParams.get("kind") ?? "";
   const selectedKind = itemKinds.includes(kindParam) ? kindParam : "";
+  const { search } = useLocation();
+
+  useEffect(() => {
+    rememberHomeSearch(search);
+  }, [search]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [items, setItems] = useState<InventoryItem[]>([]);

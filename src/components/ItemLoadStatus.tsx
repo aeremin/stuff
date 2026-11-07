@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
 import type { ItemState } from "../useItem";
 import "../pages/ItemPage.css";
+import { BackToHomeLink } from "./BackToHomeLink";
 
 /** What the item pages show while an item isn't loaded. */
 export function ItemLoadStatus({
@@ -23,9 +23,7 @@ export function ItemLoadStatus({
       ) : (
         <div className="item-page__not-found">Item not found</div>
       )}
-      <Link to="/" className="item-page__back">
-        ← Back to home
-      </Link>
+      <BackToHomeLink />
     </div>
   );
 }

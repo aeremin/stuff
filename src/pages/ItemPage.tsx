@@ -6,6 +6,7 @@ import { availableFields, isFieldVisibleForItemKind } from "../schema";
 import type { FieldDescriptor } from "../schema";
 import { useItem } from "../useItem";
 import "./ItemPage.css";
+import { BackToHomeLink } from "../components/BackToHomeLink";
 
 export function ItemPage() {
   const { id } = useParams<{ id: string }>();
@@ -110,9 +111,7 @@ export function ItemPage() {
   return (
     <div className="item-page">
       <div className="item-page__header">
-        <Link to="/" className="item-page__back">
-          ← Back to home
-        </Link>
+        <BackToHomeLink />
       </div>
       <div className="item-page__card">
         <h1 className="item-page__title">{item["name"] as string}</h1>
