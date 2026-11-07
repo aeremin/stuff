@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ItemLoadStatus } from "../components/ItemLoadStatus";
 import { MarkdownView } from "../components/MarkdownView";
-import { availableFields, isFieldVisibleForItemKind } from "../schema";
+import {
+  availableFields,
+  isFieldVisibleForItemKind,
+  THUMBNAILS_KEY,
+  thumbnailUrl,
+} from "../schema";
 import type { FieldDescriptor } from "../schema";
 import { useItem } from "../useItem";
 import "./ItemPage.css";
@@ -53,14 +58,16 @@ export function ItemPage() {
       k !== "id" &&
       k !== "lastEdited" &&
       k !== "lastViewed" &&
+      k !== THUMBNAILS_KEY &&
       !knownFieldIds.has(k),
   );
   const itemKind = String(item["kind"] ?? "");
 
   function renderFieldValue(
     value: unknown,
-    type: FieldDescriptor["type"],
+    field: FieldDescriptor,
   ): React.ReactNode {
+    const { type } = field;
     if (value === null || value === undefined) return "";
     if (type === "image" && typeof value === "string" && value.trim() !== "") {
       return (
@@ -70,8 +77,11 @@ export function ItemPage() {
           rel="noopener noreferrer"
           className="item-page__field-image-link"
         >
+          {/* The full photo stands in until the thumbnail exists (just after
+              the photo changed) or if it could not be made. The link always
+              opens the full photo. */}
           <img
-            src={value}
+            src={thumbnailUrl(item, field.id) ?? value}
             alt=""
             className="item-page__field-image-thumb"
             loading="lazy"
@@ -156,7 +166,7 @@ export function ItemPage() {
                   {field.humanReadableName}
                 </dt>
                 <dd className="item-page__field-value">
-                  {renderFieldValue(value, field.type)}
+                  {renderFieldValue(value, field)}
                 </dd>
               </div>
             );

@@ -4,7 +4,7 @@
 
 ### Overview
 
-"Stuff" is a single-page React + TypeScript inventory management app built with Vite. All backend services (Firebase Auth, Firestore, Storage, Algolia) are remote SaaS — there are no local servers, databases, or containers to run. The `functions/` directory holds a separate Node package: the remote MCP server (a Cloud Function), described in `README.md`.
+"Stuff" is a single-page React + TypeScript inventory management app built with Vite. All backend services (Firebase Auth, Firestore, Storage, Algolia) are remote SaaS — there are no local servers, databases, or containers to run. The `functions/` directory holds a separate Node package: the remote MCP server (a Cloud Function) and the `itemThumbnails` Firestore trigger that makes photo thumbnails, both described in `README.md`.
 
 ### Commands
 

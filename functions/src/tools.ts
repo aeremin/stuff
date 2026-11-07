@@ -4,7 +4,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { ITEMS_COLLECTION } from "./config.js";
-import { bucket, db } from "./firebase.js";
+import { db } from "./firebase.js";
+import { fetchImage, imageExtension, saveImage } from "./images.js";
 import {
   availableFields,
   blankItem,
@@ -92,47 +93,11 @@ function itemFields(args: Record<string, unknown>): Record<string, unknown> {
 }
 
 const PHOTO_FIELD = availableFields.find((f) => f.type === "image")?.id ?? "photo";
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
-const IMAGE_EXTENSIONS: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "image/svg+xml": "svg",
-  "image/avif": "avif",
-  "image/heic": "heic",
-};
-
 async function storeImageFromUrl(source: string): Promise<string> {
-  const response = await fetch(source, {
-    redirect: "follow",
-    signal: AbortSignal.timeout(20_000),
-    headers: { Accept: "image/*" },
-  });
-  if (!response.ok) {
-    throw new Error(`Downloading the image failed: HTTP ${response.status}`);
-  }
-  const contentType = (response.headers.get("content-type") ?? "")
-    .split(";")[0]!
-    .trim()
-    .toLowerCase();
-  if (!contentType.startsWith("image/")) {
-    throw new Error(`The URL is not an image (content type "${contentType || "unknown"}").`);
-  }
-  const declared = Number(response.headers.get("content-length") ?? 0);
-  if (declared > MAX_PHOTO_BYTES) throw new Error("The image is larger than 10 MB.");
-  const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.length > MAX_PHOTO_BYTES) throw new Error("The image is larger than 10 MB.");
-
-  // Same layout and URL form as the web app's uploads (src/storageUpload.ts).
-  const path = `item-images/${randomUUID()}.${IMAGE_EXTENSIONS[contentType] ?? "jpg"}`;
-  const token = randomUUID();
-  const file = bucket().file(path);
-  await file.save(bytes, {
-    contentType,
-    metadata: { metadata: { firebaseStorageDownloadTokens: token } },
-  });
-  return `https://firebasestorage.googleapis.com/v0/b/${file.bucket.name}/o/${encodeURIComponent(path)}?alt=media&token=${token}`;
+  const { bytes, contentType } = await fetchImage(source);
+  // Same layout as the web app's uploads (src/storageUpload.ts).
+  const path = `item-images/${randomUUID()}.${imageExtension(contentType)}`;
+  return (await saveImage(path, bytes, contentType)).url;
 }
 
 export function createMcpServer(): McpServer {
