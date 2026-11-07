@@ -21,9 +21,14 @@ function homeSearch(): string {
   }
 }
 
+/** The home page, in the category the user came from. */
+export function homeLocation() {
+  return { pathname: "/", search: homeSearch() };
+}
+
 export function BackToHomeLink() {
   return (
-    <Link to={{ pathname: "/", search: homeSearch() }} className="item-page__back">
+    <Link to={homeLocation()} className="item-page__back">
       ← Back to home
     </Link>
   );

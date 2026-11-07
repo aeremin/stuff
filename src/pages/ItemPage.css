@@ -86,6 +86,26 @@
   cursor: not-allowed;
 }
 
+/* Pushed to the far end of the actions row, away from Edit. */
+.item-page__delete-button {
+  margin-left: auto;
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  box-shadow:
+    0 8px 20px rgba(220, 38, 38, 0.35),
+    0 0 0 1px rgba(15, 23, 42, 0.6);
+}
+
+.item-page__delete-button:hover:not(:disabled) {
+  box-shadow:
+    0 12px 30px rgba(220, 38, 38, 0.5),
+    0 0 0 1px rgba(15, 23, 42, 0.7);
+}
+
+.item-page__delete-error {
+  padding: 0 0 1.25rem;
+  text-align: left;
+}
+
 .item-page__nfc-helper,
 .item-page__nfc-status {
   margin: 0;
@@ -200,6 +220,12 @@
   .item-page__nfc-button {
     box-shadow:
       0 8px 20px rgba(129, 140, 248, 0.4),
+      0 0 0 1px rgba(148, 163, 184, 0.3);
+  }
+
+  .item-page__delete-button {
+    box-shadow:
+      0 8px 20px rgba(248, 113, 113, 0.4),
       0 0 0 1px rgba(148, 163, 184, 0.3);
   }
 
