@@ -27,7 +27,7 @@ There are no automated tests or linter; `npx tsc --noEmit` is the only static ch
 | --- | --- |
 | `/` | Search (Algolia, through the Cloud Function) and the five most recently viewed items |
 | `/add` | Add a new item |
-| `/item/:id` | Item details; on phones with Web NFC (Chrome on Android) it can write the page URL to an NFC tag |
+| `/item/:id` | Item details, with Edit and Delete (after a confirmation prompt); on phones with Web NFC (Chrome on Android) it can write the page URL to an NFC tag |
 | `/item/:id/edit` | Edit an item |
 | `/purefil` | Bar chart of Purefil filament stock by colour (not linked from the UI) |
 | `/connect` | Approve an MCP client (opened by the MCP server's sign-in flow) |
@@ -42,7 +42,7 @@ The fields are defined in [`src/schema.ts`](src/schema.ts): their type (number, 
 
 Photos are uploaded to Firebase Storage under `item-images/` and stored on the item as a download URL.
 
-Thumbnails are made automatically. The Cloud Function **`itemThumbnails`** ([`functions/src/thumbnails.ts`](functions/src/thumbnails.ts)) runs on every write to `items`; when a photo has no thumbnail made from it yet, it shrinks the photo to 400 px on the longest side, saves it as WebP under `item-thumbnails/` and records it on the item as `thumbnails.photo` (`{ source, url, path }`, where `source` is the photo URL it was made from). The thumbnail of a replaced or removed photo is deleted. The item page shows the thumbnail and links to the full photo; until the thumbnail exists, or if it could not be made (the record then has an `error` instead of a `url`, e.g. for HEIC), it shows the full photo. Older photos get their thumbnail the first time the item is opened, since that writes `lastViewed`. `thumbnails` is not part of the schema and MCP results leave it out.
+Thumbnails are made automatically. The Cloud Function **`itemThumbnails`** ([`functions/src/thumbnails.ts`](functions/src/thumbnails.ts)) runs on every write to `items`; when a photo has no thumbnail made from it yet, it shrinks the photo to 400 px on the longest side, saves it as WebP under `item-thumbnails/` and records it on the item as `thumbnails.photo` (`{ source, url, path }`, where `source` is the photo URL it was made from). The thumbnail of a replaced or removed photo, or of a deleted item, is deleted. Photos themselves are never deleted from Storage. The item page shows the thumbnail and links to the full photo; until the thumbnail exists, or if it could not be made (the record then has an `error` instead of a `url`, e.g. for HEIC), it shows the full photo. Older photos get their thumbnail the first time the item is opened, since that writes `lastViewed`. `thumbnails` is not part of the schema and MCP results leave it out.
 
 ## Services and access
 
@@ -102,7 +102,7 @@ The client opens a browser window on the app's `/connect` page; approve it while
 | `adjust_amount` | Add to or subtract from `amount` atomically |
 | `set_item_photo` | Download an image URL into Storage (`item-images/`) and set it as the photo |
 
-Items written through MCP are stored the same way the web form stores them: blank fields as `""` or `0`, fields that do not apply to the item's kind cleared, and `lastEdited` set. Reads do not touch `lastViewed`. There is no delete tool, as the web app has none.
+Items written through MCP are stored the same way the web form stores them: blank fields as `""` or `0`, fields that do not apply to the item's kind cleared, and `lastEdited` set. Reads do not touch `lastViewed`. There is no delete tool: items are deleted only in the web app.
 
 ### How it is hosted
 

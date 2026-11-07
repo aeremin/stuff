@@ -1,5 +1,7 @@
+import { deleteDoc, doc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { db, INVENTORY_COLLECTION } from "../firebase";
 import { ItemLoadStatus } from "../components/ItemLoadStatus";
 import { MarkdownView } from "../components/MarkdownView";
 import {
@@ -11,11 +13,14 @@ import {
 import type { FieldDescriptor } from "../schema";
 import { useItem } from "../useItem";
 import "./ItemPage.css";
-import { BackToHomeLink } from "../components/BackToHomeLink";
+import { BackToHomeLink, homeLocation } from "../components/BackToHomeLink";
 
 export function ItemPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const state = useItem(id);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [nfcSupported, setNfcSupported] = useState(false);
   const [nfcWriting, setNfcWriting] = useState(false);
   const [nfcStatus, setNfcStatus] = useState<string | null>(null);
@@ -51,6 +56,26 @@ export function ItemPage() {
     return <ItemLoadStatus state={state} />;
   }
   const { item } = state;
+
+  // The itemThumbnails function deletes the item's thumbnails once the
+  // document is gone.
+  const handleDelete = async () => {
+    const name = String(item["name"] ?? "").trim() || "this item";
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+    setDeleteError(null);
+    setDeleting(true);
+    try {
+      await deleteDoc(doc(db, INVENTORY_COLLECTION, item.id));
+      // Replace the history entry, so Back does not return to a deleted item.
+      navigate(homeLocation(), { replace: true });
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Failed to delete item.",
+      );
+      setDeleting(false);
+    }
+  };
 
   const knownFieldIds = new Set(availableFields.map((f) => f.id));
   const extraKeys = Object.keys(item).filter(
@@ -147,7 +172,20 @@ export function ItemPage() {
               )}
             </div>
           )}
+          <button
+            type="button"
+            className="item-page__nfc-button item-page__delete-button"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting…" : "Delete"}
+          </button>
         </div>
+        {deleteError && (
+          <div className="item-page__error item-page__delete-error">
+            {deleteError}
+          </div>
+        )}
         <dl className="item-page__fields">
           {availableFields.map((field) => {
             if (!isFieldVisibleForItemKind(field, itemKind)) return null;
