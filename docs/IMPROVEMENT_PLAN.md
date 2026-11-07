@@ -50,7 +50,7 @@ A review of the whole repository (web app, MCP server, rules and CI) from Novemb
 - **Quick ±amount buttons** on the item page, using Firestore's atomic `increment()`, plus a low-stock threshold and a "running low" list.
 - **Delete or archive** items, and **"Duplicate as new"** for making screw variants.
 - **Browse by kind.** Right now the home page only offers search and the five last-viewed items.
-- **Shrink photos before upload.** Phone photos are several MB and thumbnails load at full size. Also delete images that are replaced or removed; they're currently left in storage.
+- **Shrink photos before upload.** Phone photos are several MB. (The item page now shows generated thumbnails, see `functions/src/thumbnails.ts`.) Also delete images that are replaced or removed; they're currently left in storage (their thumbnails are deleted).
 - **Printable QR labels** as an alternative to NFC, since Web NFC doesn't work on iPhones.
 - **Generalize `/purefil`** to any filament brand, and link to it from the app.
 - *(Bigger, optional)* Store blank numbers as "not set" instead of `0`. That removes the "is 0 a real value?" guessing noted at [`functions/src/items.ts:108`](../functions/src/items.ts), but it needs a data migration and an MCP change.

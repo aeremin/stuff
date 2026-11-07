@@ -23,6 +23,8 @@ import { FirestoreOAuthProvider } from "./oauth.js";
 import { algoliaSearchKey, searchRouter } from "./search.js";
 import { createMcpServer } from "./tools.js";
 
+export { itemThumbnails } from "./thumbnails.js";
+
 const provider = new FirestoreOAuthProvider(db);
 
 const app = express();

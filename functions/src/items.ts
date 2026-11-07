@@ -7,6 +7,7 @@ import {
   availableFields,
   isFieldVisibleForItemKind,
   ItemKind,
+  THUMBNAILS_KEY,
   type FieldDescriptor,
 } from "../../src/schema.js";
 import { itemUrl } from "./config.js";
@@ -113,7 +114,9 @@ export function serializeItem(
     out[field.id] = toPlain(value);
   }
   for (const [key, value] of Object.entries(data)) {
-    if (fieldsById.has(key) || key === "id" || isBlank(value)) continue;
+    // Thumbnails are a display detail of the web app, made automatically.
+    if (fieldsById.has(key) || key === "id" || key === THUMBNAILS_KEY) continue;
+    if (isBlank(value)) continue;
     out[key] = toPlain(value);
   }
   return out;

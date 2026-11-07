@@ -42,6 +42,8 @@ The fields are defined in [`src/schema.ts`](src/schema.ts): their type (number, 
 
 Photos are uploaded to Firebase Storage under `item-images/` and stored on the item as a download URL.
 
+Thumbnails are made automatically. The Cloud Function **`itemThumbnails`** ([`functions/src/thumbnails.ts`](functions/src/thumbnails.ts)) runs on every write to `items`; when a photo has no thumbnail made from it yet, it shrinks the photo to 400 px on the longest side, saves it as WebP under `item-thumbnails/` and records it on the item as `thumbnails.photo` (`{ source, url, path }`, where `source` is the photo URL it was made from). The thumbnail of a replaced or removed photo is deleted. The item page shows the thumbnail and links to the full photo; until the thumbnail exists, or if it could not be made (the record then has an `error` instead of a `url`, e.g. for HEIC), it shows the full photo. Older photos get their thumbnail the first time the item is opened, since that writes `lastViewed`. `thumbnails` is not part of the schema and MCP results leave it out.
+
 ## Services and access
 
 - **Auth:** Firebase Auth with the Google provider, signed in through a popup. The app follows Firebase Auth's own session. Any Google account can sign in; for accounts the security rules do not allow, every page just fails to load its data.
@@ -111,6 +113,7 @@ Everything runs in the `stuff-11062` project; the code is in [`functions/`](func
 - Signing in reuses the app itself. `/authorize` redirects to `/connect`, where the already signed-in user approves; the page sends their Firebase ID token to the function, which checks it for the same admin claim as the security rules ([`functions/src/access.ts`](functions/src/access.ts)). The Admin SDK bypasses the rules, so this check is what protects the data. On every request, and on every refresh, the token's user is looked up again in Firebase Auth (cached for a minute per instance): a disabled account, or one without the claim, is turned away.
 - OAuth state is kept in Firestore: `mcpClients`, `mcpAuthRequests`, `mcpAuthCodes` and `mcpTokens`. The security rules only open the `items` collection to the web app, so these are reachable only through the function. Codes and tokens are random strings stored only as SHA-256 hashes; access tokens last an hour, refresh tokens 90 days. TTL policies in [`firestore.indexes.json`](firestore.indexes.json) remove expired records.
 - The function needs the Blaze plan, like any Cloud Function.
+- The same codebase also deploys **`itemThumbnails`**, a Firestore trigger on `items` (see [Data model](#data-model)). It runs through Eventarc, so the first deploy of it may need the deploy service account to have Eventarc Admin and Pub/Sub Admin as well, and the Eventarc API enabled.
 
 Build and type-check it with:
 

@@ -154,3 +154,46 @@ export const availableFields: FieldDescriptor[] = [
     onlyForKinds: [ItemKind.Climbing],
   },
 ];
+
+/**
+ * Item key holding thumbnails of the item's image fields, keyed by field id
+ * (`thumbnails.photo`). They are made by the `itemThumbnails` Cloud Function
+ * (functions/src/thumbnails.ts) whenever an image field changes; nothing else
+ * writes them.
+ */
+export const THUMBNAILS_KEY = "thumbnails";
+
+export interface Thumbnail {
+  /** The image URL the thumbnail was made from. */
+  source: string;
+  /** Download URL of the thumbnail; missing if it could not be made. */
+  url?: string;
+  /** Storage path of the thumbnail, so it can be deleted when replaced. */
+  path?: string;
+  /** Why the thumbnail could not be made. */
+  error?: string;
+}
+
+/**
+ * The thumbnail of an item's image field, if there is one and it was made
+ * from the field's current value (right after the photo changes, the old
+ * thumbnail lingers until the function replaces it).
+ */
+export function thumbnailUrl(
+  item: Record<string, unknown>,
+  fieldId: string,
+): string | undefined {
+  const thumbnails = item[THUMBNAILS_KEY];
+  if (!thumbnails || typeof thumbnails !== "object") return undefined;
+  const thumbnail = (thumbnails as Record<string, Partial<Thumbnail>>)[fieldId];
+  const source = item[fieldId];
+  if (
+    typeof source !== "string" ||
+    source.trim() === "" ||
+    thumbnail?.source !== source.trim() ||
+    typeof thumbnail.url !== "string"
+  ) {
+    return undefined;
+  }
+  return thumbnail.url;
+}
