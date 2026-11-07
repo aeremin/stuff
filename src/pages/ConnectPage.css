@@ -1,17 +1,17 @@
 .connect-page .connect-page__text {
   margin: 0 0 0.9rem;
-  color: #e5e7eb;
+  color: var(--text);
 }
 
 .connect-page .connect-page__muted {
   font-size: 0.9rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   overflow-wrap: anywhere;
 }
 
 .connect-page .connect-page__error {
   margin: 0 0 0.9rem;
-  color: #fca5a5;
+  color: var(--danger-text);
 }
 
 .connect-page__actions {
@@ -19,31 +19,23 @@
 }
 
 .connect-page__deny {
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-strong);
   background: transparent;
-  color: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.925rem;
+  font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
+}
+
+.connect-page__deny:hover:not(:disabled) {
+  background: var(--surface-2);
 }
 
 .connect-page__deny:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-@media (prefers-color-scheme: light) {
-  .connect-page .connect-page__text {
-    color: #111827;
-  }
-
-  .connect-page .connect-page__muted {
-    color: #4b5563;
-  }
-
-  .connect-page .connect-page__error {
-    color: #b91c1c;
-  }
 }

@@ -180,22 +180,43 @@ export function HomePage() {
     <div className="home">
       <div className="home__header-row">
         <h1 className="home__title">Your inventory</h1>
-        <Link to="/add" className="home__add-link">
-          + Add new item
+        <Link to="/add" className="button home__add-link">
+          <svg
+            viewBox="0 0 24 24"
+            className="home__add-icon"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Add item
         </Link>
       </div>
 
-      <div className="home__search">
-        <label className="home__search-label">
-          <span className="home__section-title">Search items</span>
-          <input
-            type="text"
-            className="home__search-input"
-            placeholder="Search by name or description…"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-          />
-        </label>
+      <div className="home__search" role="search">
+        <svg
+          viewBox="0 0 24 24"
+          className="home__search-icon"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <input
+          type="search"
+          className="home__search-input"
+          aria-label="Search items"
+          placeholder="Search by name or description…"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
       </div>
 
       <nav className="home__kinds" aria-label="Categories">
