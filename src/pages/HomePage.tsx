@@ -1,12 +1,35 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+  type QuerySnapshot,
+} from "firebase/firestore";
 import { ItemList } from "../components/ItemList";
 import { searchItems } from "../search";
 import { db, INVENTORY_COLLECTION } from "../firebase";
+import { ItemKind } from "../schema";
 import type { InventoryItem } from "../common";
 
+const itemKinds: string[] = Object.values(ItemKind);
+
+function toItems(snap: QuerySnapshot): InventoryItem[] {
+  return snap.docs.map((d) => {
+    const data = d.data() as Record<string, unknown>;
+    const name = typeof data.name === "string" ? data.name : "(no name)";
+    return { id: d.id, ...data, name } as InventoryItem;
+  });
+}
+
 export function HomePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const kindParam = searchParams.get("kind") ?? "";
+  const selectedKind = itemKinds.includes(kindParam) ? kindParam : "";
+
   const [searchTerm, setSearchTerm] = useState("");
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,14 +56,7 @@ export function HomePage() {
         );
         const snap = await getDocs(q);
         if (cancelled) return;
-
-        const results = snap.docs.map((d) => {
-          const data = d.data() as Record<string, unknown>;
-          const name =
-            typeof data.name === "string" ? data.name : "(no name)";
-          return { id: d.id, ...data, name } as InventoryItem;
-        });
-        setLastViewedItems(results);
+        setLastViewedItems(toItems(snap));
       } catch (err) {
         if (!cancelled) {
           setLastViewedError(
@@ -59,6 +75,57 @@ export function HomePage() {
       cancelled = true;
     };
   }, []);
+
+  const [kindItems, setKindItems] = useState<InventoryItem[]>([]);
+  const [kindLoading, setKindLoading] = useState(false);
+  const [kindError, setKindError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedKind) {
+      setKindItems([]);
+      setKindError(null);
+      setKindLoading(false);
+      return;
+    }
+    let cancelled = false;
+
+    async function fetchKind() {
+      setKindLoading(true);
+      setKindError(null);
+      try {
+        // Equality only, so no composite index is needed; one kind of a
+        // personal inventory is small enough to sort here.
+        const q = query(
+          collection(db, INVENTORY_COLLECTION),
+          where("kind", "==", selectedKind),
+        );
+        const snap = await getDocs(q);
+        if (cancelled) return;
+        const results = toItems(snap).sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, { numeric: true }),
+        );
+        setKindItems(results);
+      } catch (err) {
+        if (!cancelled) {
+          setKindError(
+            err instanceof Error ? err.message : "Failed to load items.",
+          );
+        }
+      } finally {
+        if (!cancelled) setKindLoading(false);
+      }
+    }
+
+    fetchKind();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedKind]);
+
+  const selectKind = (kind: string) => {
+    setSearchTerm("");
+    setSearchParams(kind && kind !== selectedKind ? { kind } : {});
+  };
 
   useEffect(() => {
     const trimmed = searchTerm.trim();
@@ -125,7 +192,47 @@ export function HomePage() {
         </label>
       </div>
 
-      {!searchTerm.trim() && (
+      <nav className="home__kinds" aria-label="Categories">
+        {itemKinds.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className={
+              "home__kind-chip" +
+              (kind === selectedKind ? " home__kind-chip--active" : "")
+            }
+            aria-pressed={kind === selectedKind}
+            onClick={() => selectKind(kind)}
+          >
+            {kind}
+          </button>
+        ))}
+      </nav>
+
+      {!searchTerm.trim() && selectedKind && (
+        <div>
+          <h2 className="home__section-title">
+            {selectedKind}
+            {!kindLoading && !kindError && (
+              <span className="home__count"> · {kindItems.length}</span>
+            )}
+          </h2>
+          <div className="home__results">
+            {kindLoading && <p className="home__status">Loading…</p>}
+            {kindError && (
+              <p className="home__status home__status--error">{kindError}</p>
+            )}
+            {!kindLoading && !kindError && kindItems.length === 0 && (
+              <p className="home__status">No items in this category.</p>
+            )}
+            {!kindLoading && !kindError && kindItems.length > 0 && (
+              <ItemList items={kindItems} />
+            )}
+          </div>
+        </div>
+      )}
+
+      {!searchTerm.trim() && !selectedKind && (
         <div>
           <h2 className="home__section-title">Last viewed</h2>
           <div className="home__results">
