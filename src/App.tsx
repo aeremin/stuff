@@ -58,6 +58,7 @@ function AppHeader({ user }: { user: User }) {
     <header className="app-header">
       <div className="app-header__inner">
         <Link to={homeLocation()} className="app-header__brand">
+          <img src="/favicon.svg" alt="" className="app-header__logo" />
           Stuff
         </Link>
         <div className="user-info" title={fullName}>
