@@ -34,6 +34,10 @@ There are no automated tests or linter; `npx tsc --noEmit` is the only static ch
 
 Opening an item or its edit page updates its `lastViewed` timestamp, which drives the "Last viewed" list.
 
+## Installing as an app
+
+The site is a Progressive Web App: `public/manifest.webmanifest` describes it and `public/sw.js` is its service worker, registered in `src/main.tsx` for production builds only. Chrome on Android offers "Install app" in its menu (or an install banner). The service worker caches the app shell and the hashed `/assets/` files so the app opens without a network; it never touches the Cloud Function paths (`/api`, `/mcp`, OAuth) or Firebase's `/__/` paths. The PNG icons in `public/` are renders of `favicon.svg`; `icon-maskable-512.png` puts the shelf on a full-bleed background for Android's icon masks.
+
 ## Data model
 
 Items live in the Firestore collection **`items`** of the Firebase project **`stuff-11062`**. Each item has `name`, `kind`, a set of other fields, and `lastEdited` / `lastViewed` timestamps.
